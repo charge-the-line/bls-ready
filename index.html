@@ -1,0 +1,369 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#111820">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="mobile-web-app-capable" content="yes">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<meta name="apple-mobile-web-app-title" content="BLS Ready">
+<title>BLS Ready</title>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Saira+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#111820;--deck:#18222e;--deck2:#22303f;--line:#34485e;--ink:#f2f6fa;--soft:#aebdcc;--red:#2f80ed;--red2:#5aa3ff;--alarm:#e5383b;--green:#39e36f;--amber:#ffc23d;--blue:#6fd3ff}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--ink);font-family:"Atkinson Hyperlegible",system-ui,sans-serif;-webkit-text-size-adjust:100%}
+body{max-width:540px;margin:0 auto;padding:calc(10px + env(safe-area-inset-top,0px)) calc(12px + env(safe-area-inset-right,0px)) calc(40px + env(safe-area-inset-bottom,0px)) calc(12px + env(safe-area-inset-left,0px))}
+h1,h2,h3,.num{font-family:"Saira Condensed","Arial Narrow",sans-serif}
+button{font-family:inherit;font-size:15px;border-radius:10px;padding:11px 12px;cursor:pointer;color:var(--ink);background:var(--deck2);border:1px solid var(--line);touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;line-height:1.15}
+button:active{transform:translateY(1px)}button:disabled{opacity:.35;cursor:default}
+button:focus-visible{outline:2px solid var(--red2);outline-offset:2px}
+.go{background:var(--red);border-color:var(--red);color:#fff;font-weight:700}
+.on{background:#1f6b45!important;border-color:#2f9e66!important;color:#fff}
+.hot{background:var(--red)!important;border-color:var(--red)!important;color:#fff;animation:pulse 1s infinite}
+.hold{background:#1d4f8f!important;border-color:var(--red2)!important;color:#fff;box-shadow:0 0 0 3px rgba(229,56,59,.35) inset}
+@keyframes pulse{50%{box-shadow:0 0 0 4px rgba(229,56,59,.35)}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+.hidden{display:none!important}
+.brand{font-family:"Saira Condensed",sans-serif;font-weight:700;font-size:15px;letter-spacing:1.5px;color:var(--red2)}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px}
+.top h1{margin:0;font-size:24px;font-weight:600;line-height:1.05}
+.meta{text-align:right;font-size:14px;color:var(--soft)}.meta b{color:var(--ink);font-family:"Saira Condensed";font-size:18px}
+.card{background:var(--deck);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:10px}
+.card h2{margin:0 0 4px;font-size:22px;font-weight:600}
+.sub{font-size:14px;color:var(--soft);margin:0 0 8px}
+.row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.row.three{grid-template-columns:repeat(3,minmax(0,1fr))}
+.grp{margin-bottom:10px}.grp:last-child{margin-bottom:0}.grp h3{margin:0 0 6px;font-size:17px;font-weight:600;color:var(--soft)}
+.grp h3 b{color:var(--red2);font-size:20px}
+.stat{font-size:13px;color:var(--soft);margin-top:6px;line-height:1.35}
+.vic{background:#0a0f15;border:2px solid #2a3a4c;border-radius:14px;padding:10px 12px;margin-bottom:10px}
+.vic .hdr{display:flex;justify-content:space-between;font-size:13px;color:#8ea2b6;margin-bottom:4px}
+.bar{height:16px;border-radius:8px;background:#1d2a38;overflow:hidden;position:relative}.bar div{height:100%;background:var(--red);width:0}
+.bar span{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff}
+.vrow{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}.v .l{font-size:12px;color:#8ea2b6}.v .n{font-family:"Saira Condensed";font-size:22px;font-weight:600}
+.steps{list-style:none;padding:0;margin:0}.steps li{display:flex;gap:10px;padding:6px 0;font-size:15px;border-top:1px solid #2a3a4c}.steps li:first-child{border-top:0}
+.steps .box{width:18px;height:18px;border:2px solid var(--soft);border-radius:5px;flex:0 0 auto;margin-top:1px}.steps li.done{color:#7f91a3;text-decoration:line-through}.steps li.done .box{background:#2f9e66;border-color:#2f9e66}
+.radio{font-size:15px;line-height:1.4;max-height:170px;overflow:auto}.radio div{padding:4px 0;border-top:1px dashed #2a3a4c}.radio div:first-child{border-top:0}
+.radio .who{color:var(--red2);font-weight:700}.radio .bad{color:#ff9a96}.radio .good{color:#7fe3a4}
+.overlay{position:fixed;inset:0;background:rgba(6,10,16,.93);display:flex;align-items:flex-start;justify-content:center;padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px));z-index:10;overflow:auto}
+.overlay .box{background:var(--deck);border:1px solid var(--line);border-radius:16px;padding:18px;max-width:480px;width:100%;margin:auto}
+.overlay h2{font-size:27px;margin:0 0 8px;font-weight:600;line-height:1.1}
+.overlay p{font-size:16px;line-height:1.5;color:#dce6f0;margin:0 0 12px}
+.tag{display:inline-block;font-size:13px;font-weight:700;border-radius:6px;padding:2px 8px;margin-bottom:8px;background:var(--red);color:#fff}
+.opt{display:block;width:100%;text-align:left;margin-bottom:8px;padding:12px;font-size:16px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 12px}.chip{padding:7px 11px;font-size:14px;border-radius:16px;background:#1d3350;border-color:#3a6ea8;color:#d6e8ff}
+.big{font-family:"Saira Condensed";font-size:60px;font-weight:700;color:var(--red2);line-height:1}
+.mrow{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-top:1px solid #2a3a4c;font-size:15px}.mrow:first-child{border-top:0}.mrow span{color:var(--soft)}
+.tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:6px 0 10px}
+.scen{display:block;width:100%;text-align:left;padding:12px;margin-bottom:8px}.scen b{display:block;font-family:"Saira Condensed";font-size:21px;font-weight:600}.scen span{font-size:14px;color:var(--soft)}
+.sec{font-family:"Saira Condensed";font-size:15px;letter-spacing:1px;color:var(--red2);margin:14px 0 6px}
+.slide h2{font-size:30px}.slide .art{margin:6px 0 12px}.slide ul{margin:0 0 12px;padding-left:20px;font-size:16px;line-height:1.5}.slide li{margin-bottom:4px}
+.dots{display:flex;gap:4px;justify-content:center;margin:8px 0}.dots i{width:8px;height:8px;border-radius:50%;background:#4a3539}.dots i.on2{background:var(--red2)}
+textarea,input{font-family:inherit;font-size:16px;padding:10px;border-radius:8px;border:1px solid var(--line);background:#0d141c;color:var(--ink);width:100%}
+.legal{font-size:12px;color:#8b9cad;line-height:1.45;margin-top:10px}
+.station svg{width:100%;max-width:420px;display:block;margin:0 auto}
+.meter{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--soft);margin:6px 0}.meter .bar{flex:1;height:12px}
+body.tv{max-width:1100px}@media (min-width:1000px){body.tv{zoom:1.3}}
+.pad{width:100%;height:150px;font-size:24px;font-family:"Saira Condensed",sans-serif;background:#13273f;border-color:var(--red2)}
+.kv{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:6px 0}.kv div{background:#0d141c;border:1px solid var(--line);border-radius:8px;padding:6px;text-align:center}.kv b{display:block;font-family:"Saira Condensed";font-size:24px}.kv span{font-size:11px;color:var(--soft)}
+</style>
+</head>
+<body>
+<div id="home">
+  <div class="top"><div><div class="brand">BLS READY</div><h1>High-quality CPR, every time.</h1></div></div>
+  <p class="sub" style="font-size:15px">Practice for Basic Life Support: learn it, drill the skills on a real clock, run team scenarios, and get ready for the exam. Updated for the 2025 guidelines.</p>
+  <div class="sec">1 · LEARN</div>
+  <button class="scen" id="h-learn"><b>The lesson</b><span>14 short slides in course order, each with a check · includes the 2025 changes</span></button>
+  <div class="sec">2 · PRACTICE THE SKILLS</div>
+  <button class="scen" data-run="tempo"><b>Compressions and breaths</b><span>Tap the tempo: 30 compressions at 100–120, two breaths, back on the chest in under 10 seconds</span></button>
+  <button class="scen" data-run="adult"><b>Adult CPR and AED</b><span>Skills-test style: scene, check, call, compress, breathe, AED — timed on a real clock</span></button>
+  <button class="scen" data-run="infant"><b>Infant CPR — two rescuers</b><span>The 2025 technique, 15:2, and back on the chest fast</span></button>
+  <button class="scen" data-run="bvm"><b>Bag-mask breaths</b><span>Seal it, then one breath every 6 seconds — not faster</span></button>
+  <button class="scen" data-run="chokeA"><b>Choking — adult or child</b><span>2025: back blows first, then abdominal thrusts</span></button>
+  <button class="scen" data-run="chokeI"><b>Choking — infant</b><span>Back blows and chest thrusts — never abdominal thrusts</span></button>
+  <div class="sec">3 · TEAM SCENARIOS</div>
+  <button class="scen" data-run="team"><b>Collapse in the hallway</b><span>Two rescuers, an AED, and a switch every two minutes</span></button>
+  <button class="scen" data-run="opioid"><b>Found in the restroom</b><span>A pulse but not breathing — then it changes</span></button>
+  <button class="scen" data-run="baby"><b>Infant at the daycare</b><span>One rescuer, then two — the ratio changes</span></button>
+  <button class="scen" data-run="child"><b>Choking at the birthday party</b><span>She stops responding. Now what?</span></button>
+  <div class="tiers" style="grid-template-columns:repeat(2,1fr)"><button data-tier="0">Guided</button><button data-tier="1">Recall</button></div>
+  <p class="stat" id="tierhelp" style="margin:0 0 10px"></p>
+  <div class="sec">4 · TEST YOURSELF</div>
+  <div class="row"><button id="h-exam" class="go">Exam practice</button><button id="h-drills">Quick drills</button><button id="h-ref">Pocket reference</button><button id="h-prog">My progress</button></div>
+  <button id="h-about" style="width:100%;margin-top:6px">About this app</button>
+  <p class="legal">A practice tool. It does not replace an official course or issue certification. Take an official in-person BLS course, such as the American Heart Association's. Not affiliated with or endorsed by the American Heart Association.</p>
+</div>
+<div class="overlay hidden" id="runov" style="z-index:12"><div class="box" id="run-box"></div></div>
+<div class="overlay hidden" id="lessonov" style="z-index:12"><div class="box slide" id="lesson-box"></div></div>
+<div class="overlay hidden" id="quizov" style="z-index:12"><div class="box"><div style="display:flex;justify-content:space-between;align-items:baseline"><h2 id="qz-title" style="margin:0">Quiz</h2><span id="qz-meta" class="stat"></span></div><div id="qz-body" style="margin-top:10px"></div><div id="qz-foot" style="margin-top:10px"></div></div></div>
+<div class="overlay hidden" id="doneov" style="z-index:13"><div class="box"><h2 id="done-t"></h2><div class="big" id="done-s"></div><div id="done-b"></div>
+  <div class="row" style="margin-top:10px"><button id="done-again">Again</button><button class="go" id="done-menu">Menu</button></div></div></div>
+<div class="overlay hidden" id="infoov" style="z-index:15"><div class="box"><div id="info-b"></div><button class="go" id="info-close" style="width:100%;margin-top:10px">Close</button></div></div>
+<script>
+/* =================== core =================== */
+const APP_VERSION='0.1.0';
+const $=id=>document.getElementById(id);
+const esc=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const shuf=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
+let TIER=0,NOW=()=>performance.now()/1000;
+const KEY='bls-ready';
+function load(){try{return JSON.parse(localStorage.getItem(KEY))||{runs:[]};}catch(e){return {runs:[]};}}
+function save(p){try{localStorage.setItem(KEY,JSON.stringify(p));}catch(e){}}
+function record(kind,id,score,extra){const p=load();p.runs=(p.runs||[]).concat([Object.assign({kind,id,score,d:new Date().toISOString(),tier:TIER},extra||{})]).slice(-500);save(p);}
+function showHome(){['runov','lessonov','quizov','doneov'].forEach(i=>$(i).classList.add('hidden'));document.querySelectorAll('[data-tier]').forEach(b=>b.classList.toggle('on',+b.dataset.tier===TIER));$('tierhelp').textContent=['Guided: hints and coaching as you go.','Recall: no hints. Run it like the real skills test.'][TIER];}
+document.querySelectorAll('[data-tier]').forEach(b=>b.onclick=()=>{TIER=+b.dataset.tier;showHome();});
+let AGAIN=null;
+function showDone(t,score,html,again){$('done-t').textContent=t;$('done-s').textContent=score;$('done-b').innerHTML=html;AGAIN=again;$('doneov').classList.remove('hidden');}
+$('done-again').onclick=()=>{$('doneov').classList.add('hidden');if(AGAIN)AGAIN();};$('done-menu').onclick=()=>{$('doneov').classList.add('hidden');showHome();};
+function info(h){$('info-b').innerHTML=h;$('infoov').classList.remove('hidden');}$('info-close').onclick=()=>$('infoov').classList.add('hidden');
+/* =================== the lesson =================== */
+const LESSON=[
+ {t:'Why high-quality CPR matters',pts:['Survival from cardiac arrest depends on how fast CPR starts and how good it is — and how fast the first shock comes.','Every second without compressions, blood flow to the brain and heart falls.','High-quality CPR: right rate, right depth, full recoil, few interruptions, and breaths that aren\'t too big or too fast.'],
+  q:'What do survivors of cardiac arrest most often have in common?',o:[['Early, high-quality CPR and an early shock','good'],['A paramedic on scene within the first minute','bad'],['A pulse check every 30 seconds so nothing is missed','bad']],why:'The fastest, best CPR and the fastest defibrillation give the best chance.'},
+ {t:'Scene safety and recognition',pts:['Make sure the scene is safe for you.','Tap and shout: "Are you okay?"','No response? Shout for help, activate the emergency response system, and get an AED — or send someone for it.'],
+  q:'You find a man on the floor. The scene is safe. He doesn\'t respond when you tap and shout. Next?',o:[['Shout for help, activate emergency response, get the AED','good'],['Start compressions right away, before you do anything else','partial'],['Check his pockets for ID and a medical history','bad']],why:'Get help and the AED moving first — then check breathing and pulse. Compressions start the moment you confirm arrest.'},
+ {t:'Check breathing and pulse — together',pts:['Check breathing and pulse at the same time.','Take at least 5 seconds, but never more than 10.','Gasping isn\'t breathing — treat it as cardiac arrest.','Pulse sites: carotid for adults and children (femoral works for a child), brachial for an infant.'],
+  q:'You\'ve checked for 10 seconds and you\'re not sure you feel a pulse. What do you do?',o:[['Start CPR','good'],['Keep feeling for another 10 seconds to be sure','bad'],['Move to the other side of the neck and start over','bad']],why:'If you don\'t definitely feel a pulse within 10 seconds, start compressions.'},
+ {t:'The parts of high-quality CPR',pts:['Rate: 100 to 120 compressions per minute.','Adult depth: at least 2 inches, but not more than 2.4 inches.','Let the chest fully recoil — don\'t lean on it.','Keep pauses under 10 seconds.','Don\'t overventilate. Use feedback devices when you have them (2025).'],
+  q:'What compression rate is correct?',o:[['100 to 120 per minute','good'],['80 to 100 per minute','bad'],['As fast as you possibly can','bad']],why:'100–120 per minute. Faster than 120 usually costs depth and recoil.'},
+ {t:'Adult compressions',pts:['Patient on a firm, flat surface. Expose the chest.','Heel of one hand on the lower half of the breastbone, other hand on top.','Arms straight, shoulders right over your hands — push with your body weight.','Count out loud: 30 compressions.'],
+  q:'Where do your hands go for adult compressions?',o:[['Lower half of the breastbone','good'],['Over the left side of the chest, near the heart','bad'],['Right at the tip of the breastbone (xiphoid)','partial']],why:'Center of the chest, lower half of the sternum. Not on the xiphoid, not off to the side.'},
+ {t:'Breaths: pocket mask and bag-mask',pts:['Open the airway: head tilt–chin lift. Use a jaw thrust if you suspect a neck injury.','Each breath over about 1 second, just enough to make the chest rise.','Bag-mask: E-C clamp to seal the mask — thumb and finger make the C, the other fingers lift the jaw like an E.','Too much air or too fast hurts blood flow back to the heart.'],
+  q:'How big should each breath be?',o:[['Just enough to make the chest visibly rise','good'],['As much air as you can push, to oxygenate','bad'],['A small puff — about half a second','partial']],why:'Visible chest rise over about one second. More is harmful.'},
+ {t:'The AED',pts:['Turn it on first and follow the prompts.','Pads on the bare chest: upper right chest and lower left side (or as shown on the pads).','Clear everyone for analysis. Clear again and press shock if advised.','Resume compressions immediately after the shock — start with compressions, not a pulse check.'],
+  q:'The AED delivers a shock. What do you do next?',o:[['Resume compressions immediately','good'],['Check for a pulse right away to see if it worked','bad'],['Wait for the AED to reanalyze before touching him','bad']],why:'Go straight back to compressions. The AED will reanalyze in about 2 minutes.'},
+ {t:'Two-rescuer CPR',pts:['One rescuer compresses; the other gives breaths and handles the AED.','Switch compressors about every 2 minutes (5 cycles of 30:2), or sooner if they tire.','Make the switch fast — under 5 seconds.','Adults: 30:2 for one or two rescuers.'],
+  q:'How often should rescuers switch compressors?',o:[['About every 2 minutes, in under 5 seconds','good'],['Only when the compressor says they\'re tired','partial'],['Every 30 seconds, to keep everyone fresh','bad']],why:'Fatigue lowers quality before you feel it. Switch about every 2 minutes — fast.'},
+ {t:'Team dynamics',pts:['Clear roles: everyone knows their job.','Closed-loop communication: give a clear order, get it repeated back, hear "done."','Clear messages, calm voices.','Know your limits. Speak up if something is wrong. Summarize and reevaluate.'],
+  q:'You tell your partner, "Get the AED." What completes closed-loop communication?',o:[['They repeat it back, then tell you when it\'s done','good'],['They nod and walk off to find it','bad'],['You repeat the order a second time, louder, to make sure','bad']],why:'Order, repeat back, then "done." Nothing gets lost.'},
+ {t:'Child CPR (1 year to puberty)',pts:['Depth: at least one-third of the chest depth — about 2 inches.','One or two hands, depending on the child\'s size.','One rescuer: 30:2. Two rescuers: 15:2.','Pulse below 60 with signs of poor perfusion? Start CPR.','Use an AED right away — pediatric pads or attenuator if you have them; adult pads if you don\'t.'],
+  q:'Two rescuers are doing CPR on a 6-year-old. What ratio?',o:[['15 compressions to 2 breaths','good'],['30 compressions to 2 breaths, same as adults','bad'],['5 compressions to 1 breath','bad']],why:'Children and infants: 15:2 with two rescuers, 30:2 with one.'},
+ {t:'Infant CPR — 2025 change',pts:['Depth: about 1½ inches — one-third of the chest.','2025: the two-finger technique is no longer recommended.','Use two-thumb encircling hands, or the heel of one hand.','One rescuer 30:2, two rescuers 15:2. Brachial pulse.'],
+  q:'Which infant compression technique is no longer recommended?',o:[['Two fingers on the breastbone','good'],['Two thumbs with hands encircling the chest','bad'],['The heel of one hand','bad']],why:'Two-finger compressions rarely reach the right depth, so 2025 removed them.'},
+ {t:'Rescue breathing',pts:['A pulse, but not breathing normally? Give breaths, not compressions.','Adult: 1 breath every 6 seconds.','Infant or child: 1 breath every 2 to 3 seconds.','Recheck the pulse about every 2 minutes. If it\'s gone, start CPR.'],
+  q:'An adult has a pulse but isn\'t breathing. How often do you give breaths?',o:[['1 breath every 6 seconds','good'],['1 breath every 2 seconds','bad'],['2 breaths every 30 seconds','partial']],why:'About 10 breaths a minute for an adult with a pulse.'},
+ {t:'Opioid emergencies',pts:['Suspected opioid overdose: support breathing first — rescue breathing with a pulse, CPR without one.','Give naloxone as soon as you can, if it\'s available and you\'re trained.','Naloxone never replaces high-quality CPR for a patient with no pulse.'],
+  q:'A suspected overdose patient has no pulse. What comes first?',o:[['High-quality CPR — naloxone when you can','good'],['Naloxone first, then wait to see if it works','bad'],['Rescue breathing only, no compressions','bad']],why:'No pulse means CPR. Naloxone is given when logistically possible, but it doesn\'t replace compressions.'},
+ {t:'Choking — 2025 change',pts:['Adult or child who can\'t cough, speak, or breathe: 5 back blows, then 5 abdominal thrusts. Repeat.','Infant: 5 back blows, then 5 chest thrusts. Repeat. Never abdominal thrusts on an infant.','If they become unresponsive: call for help and start CPR. Look in the mouth before breaths — remove an object only if you can see it. No blind finger sweeps.'],
+  q:'An adult is choking and can\'t speak. What\'s the 2025 sequence?',o:[['5 back blows, then 5 abdominal thrusts','good'],['Abdominal thrusts only, until it comes out','bad'],['5 chest thrusts, then a finger sweep','bad']],why:'2025 added back blows first for adults and children, alternating with abdominal thrusts.'}];
+let LS=null;
+function lessonStart(){LS={i:0,first:{},answered:false};$('lessonov').classList.remove('hidden');lessonRender();}
+function lessonRender(){const s=LESSON[LS.i];LS.answered=false;LS.ord=shuf(s.o.map((o,k)=>k));
+  $('lesson-box').innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><span class="tag">Lesson · ${LS.i+1} of ${LESSON.length}</span><button data-l="tv" style="padding:6px 10px;font-size:13px">${document.body.classList.contains('tv')?'Phone view':'Big-screen view'}</button></div>
+   <h2>${esc(s.t)}</h2><ul>${s.pts.map(x=>`<li>${x.startsWith('2025')?'<b style="color:#ffc23d">2025:</b> '+esc(x.slice(5).replace(/^: /,'')):esc(x)}</li>`).join('')}</ul>
+   <div style="border-top:1px solid var(--line);padding-top:10px"><p style="font-size:14px;color:var(--soft);margin:0 0 4px">Check your understanding</p><p style="font-size:17px;font-weight:700;margin:0 0 8px">${esc(s.q)}</p>
+   ${LS.ord.map(k=>`<button class="opt" data-l="ans" data-k="${k}">${esc(s.o[k][0])}</button>`).join('')}<p id="l-fb" style="font-size:15px"></p></div>
+   <div class="dots">${LESSON.map((_,k)=>`<i class="${k<=LS.i?'on2':''}"></i>`).join('')}</div>
+   <div class="row"><button data-l="prev" ${LS.i?'':'disabled'}>Back</button><button class="go" data-l="next" id="l-next" disabled>${LS.i+1<LESSON.length?'Next':'Finish'}</button></div>
+   <button data-l="quit" style="width:100%;margin-top:8px">Leave the lesson</button>`;$('lessonov').scrollTop=0;}
+function lessonAct(ds){const a=ds.l;if(a==='ans'){if(LS.answered)return;const s=LESSON[LS.i],o=s.o[+ds.k],ok=o[1]==='good';if(LS.first[LS.i]===undefined)LS.first[LS.i]=ok;
+    if(ok){LS.answered=true;$('l-next').disabled=false;}$('l-fb').innerHTML=`<b style="color:${ok?'#7fe3a4':o[1]==='partial'?'#ffc23d':'#ff9a96'}">${ok?'Right.':o[1]==='partial'?'Not quite.':'No.'}</b> ${esc(ok?s.why:'Try again.')}`;}
+  else if(a==='next'){if(!LS.answered)return;if(LS.i+1<LESSON.length){LS.i++;lessonRender();}else lessonDone();}
+  else if(a==='prev'){if(LS.i){LS.i--;lessonRender();}}else if(a==='tv'){document.body.classList.toggle('tv');lessonRender();}
+  else if(a==='quit'){$('lessonov').classList.add('hidden');LS=null;}}
+function lessonDone(){const right=Object.values(LS.first).filter(Boolean).length,score=Math.round(right/LESSON.length*100);$('lessonov').classList.add('hidden');record('lesson','lesson',score);
+  showDone('Lesson complete',score,`<p>${right} of ${LESSON.length} checks right on the first try.</p><p style="font-size:14px;color:var(--soft)">Next: practice the skills on a real clock.</p>`,()=>lessonStart());LS=null;}
+$('lesson-box').onclick=e=>{const b=e.target.closest&&e.target.closest('[data-l]');if(b)lessonAct(b.dataset);};
+$('h-learn').onclick=()=>lessonStart();
+/* =================== step engine =================== */
+let RUN=null;
+const SEQ_SCENE=['Check that the scene is safe','Tap and shout: "Are you okay?"','Shout for help — activate emergency response, get the AED'];
+const AED_SEQ=['Turn the AED on','Pads on the bare chest','Clear everyone for analysis','Clear everyone — press shock'];
+const C=(n)=>({k:'tap',n,p:`Compress — ${n} compressions at 100 to 120 a minute. Count out loud.`});
+const B=(note)=>({k:'breaths',n:2,p:note||'Two breaths — each over about 1 second, just enough for the chest to rise.'});
+const DEFS={
+ tempo:{name:'Compressions and breaths',steps:()=>[{k:'info',p:'Tap the big pad like compressions. Keep 100 to 120 a minute. After 30, give two breaths, then get back on the chest — the whole pause under 10 seconds.'},C(30),B(),C(30),B(),C(30)]},
+ adult:{name:'Adult CPR and AED',steps:()=>[
+  {k:'seq',p:'A coworker collapses in the break room. Do the first three things, in order.',items:SEQ_SCENE,decoys:['Check for a pulse at the wrist','Look for a medical ID bracelet']},
+  {k:'timer',p:'Check breathing and the carotid pulse at the same time. At least 5 seconds — never more than 10.',lo:5,hi:10,label:'Start checking',stop:'Done checking',recog:true},
+  {k:'choice',p:'He\'s gasping now and then. You feel no pulse. What next?',o:[['Start compressions — gasping is not breathing','good'],['Roll him onto his side and watch his breathing','bad'],['Check the pulse again for another 10 seconds','bad']],why:'Gasping (agonal breathing) is a sign of cardiac arrest. Start compressions immediately.'},
+  {k:'choice',p:'Where do your hands go?',o:[['Lower half of the breastbone, center of the chest','good'],['Left side of the chest, over the heart','bad'],['On the very tip of the breastbone','partial']],why:'Heel of one hand on the lower half of the sternum, the other hand on top.'},
+  C(30),B('Two breaths with a pocket mask — head tilt–chin lift, each breath about 1 second.'),C(30),B(),
+  {k:'info',p:'Your coworker runs in with the AED.'},
+  {k:'seq',p:'Use the AED. In order.',items:AED_SEQ,decoys:['Check his pulse before the pads go on'],aed:true},
+  {k:'choice',p:'"Shock delivered." What now?',o:[['Resume compressions right away','good'],['Check for a pulse first','bad'],['Wait for the AED to reanalyze before touching him','bad']],why:'Go straight back to compressions. The AED reanalyzes in about 2 minutes.'},C(30)]},
+ infant:{name:'Infant CPR — two rescuers',steps:()=>[
+  {k:'choice',p:'A 6-month-old in cardiac arrest. You and a partner. Which compression technique?',o:[['Two thumbs, hands encircling the chest','good'],['Two fingers on the breastbone','bad'],['The palms of both hands, stacked like an adult','bad']],why:'2025: the two-finger technique is no longer recommended. Use two-thumb encircling hands, or the heel of one hand.'},
+  {k:'choice',p:'How deep?',o:[['About 1½ inches — a third of the chest','good'],['At least 2 inches, the same as you would for an adult','bad'],['About half an inch, to be gentle','bad']],why:'About 1½ inches (4 cm) — one-third of the chest depth.'},
+  {k:'choice',p:'Two rescuers on an infant. What ratio?',o:[['15 compressions to 2 breaths','good'],['30 compressions to 2 breaths, like one rescuer','bad'],['5 compressions to 1 breath','bad']],why:'15:2 with two rescuers for infants and children; 30:2 with one.'},
+  C(15),B('Your partner gives two breaths with the bag-mask — small, gentle, just enough for chest rise.'),C(15),B(),C(15)]},
+ bvm:{name:'Bag-mask breaths',steps:()=>[
+  {k:'choice',p:'How do you hold the mask with one hand?',o:[['E-C clamp: thumb and finger make a C, others lift the jaw','good'],['Press the mask down hard with your whole palm','bad'],['Hold it loosely so you don\'t hurt the face','bad']],why:'The E-C clamp seals the mask while lifting the jaw into the mask to open the airway.'},
+  {k:'choice',p:'An adult has a pulse but isn\'t breathing. How often do you squeeze the bag?',o:[['Once every 6 seconds','good'],['Once every 2 seconds','bad'],['As fast as the bag refills','bad']],why:'About 10 breaths a minute. Faster raises chest pressure and reduces blood flow back to the heart.'},
+  {k:'rhythm',n:6,lo:4.5,hi:8,p:'Give 6 breaths — one every 6 seconds. Count it: "one-one-thousand, two-one-thousand…"',label:'Squeeze the bag'}]},
+ chokeA:{name:'Choking — adult or child',steps:()=>[
+  {k:'choice',p:'A man at dinner grabs his throat. He can\'t speak or cough. What do you do first?',o:[['Ask "Are you choking? Can I help?", then act','good'],['Give him water to wash it down','bad'],['Wait a moment and encourage him to keep trying to cough','bad']],why:'Can\'t speak or cough means severe obstruction. Confirm and act immediately.'},
+  {k:'alt',p:'2025: give 5 back blows, then 5 abdominal thrusts. Repeat until it comes out.',a:'Back blow',b:'Abdominal thrust',out:1+Math.floor(Math.random()*2)},
+  {k:'info',p:'The piece of steak flies out. He\'s coughing and breathing. Stay with him — he should still be checked by EMS.'}]},
+ chokeI:{name:'Choking — infant',steps:()=>[
+  {k:'choice',p:'A 9-month-old is choking and can\'t cry or cough. How do you hold her?',o:[['Face down on your forearm, head lower than her body','good'],['Upright against your shoulder, patting her back firmly','bad'],['Upside down by her ankles','bad']],why:'Face down along your forearm, supporting the jaw, head lower than the chest.'},
+  {k:'alt',p:'5 back blows, then turn her over for 5 chest thrusts. Never abdominal thrusts on an infant.',a:'Back blow',b:'Chest thrust',out:1+Math.floor(Math.random()*2)},
+  {k:'info',p:'The grape comes out and she starts crying. Crying is good — she\'s moving air.'}]},
+ team:{name:'Collapse in the hallway',scen:true,steps:()=>[
+  {k:'info',p:'A visitor collapses in a clinic hallway. Your coworker Sam is right behind you. The AED is down the hall.'},
+  {k:'seq',p:'First three things, in order.',items:SEQ_SCENE,decoys:['Run to get the AED yourself first']},
+  {k:'choice',p:'Sam is standing beside you. How do you send him?',o:[['"Sam — call 911 and get the AED. Tell me when you\'re back."','good'],['"Somebody get help!"','bad'],['"Sam, could you maybe go find someone?"','partial']],why:'Closed-loop: name the person, give a clear task, and ask for a report back.'},
+  {k:'timer',p:'Check breathing and pulse — 5 to 10 seconds.',lo:5,hi:10,label:'Start checking',stop:'Done checking',recog:true},
+  C(30),B('Two breaths with your pocket mask.'),C(30),B(),
+  {k:'info',p:'Sam is back: "AED is here — 911 is called."'},
+  {k:'seq',p:'Sam runs the AED while you compress. In order.',items:AED_SEQ,decoys:['Stop compressions while the pads go on'],aed:true},
+  {k:'choice',p:'Shock delivered. Sam looks at you. What do you say?',o:[['"Resume compressions — I\'ll take breaths."','good'],['"Check his pulse first."','bad'],['"Hold off until the AED reanalyzes in two minutes."','bad']],why:'Straight back to compressions after the shock.'},
+  C(30),B(),
+  {k:'choice',p:'About 2 minutes have passed. Your compressions are slowing. What now?',o:[['"Switch on my count — 3, 2, 1, switch." Under 5 seconds.','good'],['Keep going — switching costs time','bad'],['Stop for a few seconds to catch your breath, then keep going','bad']],why:'Switch about every 2 minutes, fast. Tired compressors lose depth before they notice.'},
+  C(30),
+  {k:'choice',p:'EMS takes over. What do you tell them?',o:[['Collapse time, CPR started, shocks given, and how long','good'],['Just that he collapsed and you did CPR','partial'],['His name and that he\'s a visitor here','bad']],why:'When it happened, what you did, how many shocks, and how long — the timeline drives their next steps.'}]},
+ opioid:{name:'Found in the restroom',scen:true,steps:()=>[
+  {k:'info',p:'A man is slumped in a workplace restroom. A syringe is on the floor. His lips are blue.'},
+  {k:'seq',p:'First three things, in order.',items:SEQ_SCENE,decoys:['Pick up the syringe so no one steps on it']},
+  {k:'timer',p:'Check breathing and pulse — 5 to 10 seconds.',lo:5,hi:10,label:'Start checking',stop:'Done checking',recog:true},
+  {k:'choice',p:'He has a pulse, but he isn\'t breathing normally — just an occasional gasp. What now?',o:[['Rescue breathing: 1 breath every 6 seconds','good'],['Start chest compressions immediately','partial'],['Roll him into the recovery position and wait for EMS','bad']],why:'A pulse but inadequate breathing means rescue breathing. If the pulse is lost, start CPR.'},
+  {k:'rhythm',n:5,lo:4.5,hi:8,p:'Give rescue breaths — one every 6 seconds.',label:'Give a breath'},
+  {k:'choice',p:'A coworker brings the naloxone from the first-aid cabinet. What do you do?',o:[['Have them give it while you keep the breaths going','good'],['Stop breathing for him and give it yourself','partial'],['Hold off — it might be something other than opioids','bad']],why:'Give naloxone when you can — but don\'t stop supporting breathing to do it.'},
+  {k:'info',p:'Two minutes later you recheck.'},
+  {k:'timer',p:'Recheck the pulse — 5 to 10 seconds.',lo:5,hi:10,label:'Start checking',stop:'Done checking',recog:true},
+  {k:'choice',p:'Now you can\'t find a pulse. What next?',o:[['Start CPR — compressions now','good'],['Give another dose of naloxone first','bad'],['Keep giving rescue breaths only','bad']],why:'No pulse means CPR. Naloxone never replaces compressions.'},
+  C(30),B(),
+  {k:'seq',p:'The AED is here. In order.',items:['Turn the AED on','Pads on the bare chest','Clear everyone for analysis'],decoys:['Press the shock button now'],aed:true},
+  {k:'choice',p:'"No shock advised." What does that mean for you?',o:[['Resume compressions right away','good'],['He\'s fine — check his breathing','bad'],['Turn the AED off and continue breaths','bad']],why:'"No shock advised" doesn\'t mean he has a pulse. Keep doing CPR.'},
+  C(30),
+  {k:'choice',p:'EMS arrives. What matters most to tell them?',o:[['Pulse at first, then lost; breaths, naloxone, and CPR times','good'],['That you found a syringe on the floor','partial'],['That he\'s a coworker from the second floor','bad']],why:'The sequence and times — and the naloxone — guide their care.'}]},
+ baby:{name:'Infant at the daycare',scen:true,steps:()=>[
+  {k:'info',p:'A 4-month-old is limp and gray in her crib at the daycare where you work. You\'re alone in the room for now.'},
+  {k:'seq',p:'First three things, in order.',items:['Check that the scene is safe','Tap her foot and shout','Shout for help — activate emergency response, get the AED'],decoys:['Pick her up and run to the office']},
+  {k:'timer',p:'Check breathing and the brachial pulse (inside of the upper arm) — 5 to 10 seconds.',lo:5,hi:10,label:'Start checking',stop:'Done checking',recog:true},
+  {k:'choice',p:'No breathing, no pulse. You\'re alone. Which technique?',o:[['Heel of one hand, or two thumbs encircling the chest','good'],['Two fingers on the breastbone','bad'],['Both palms stacked, like an adult','bad']],why:'2025: two-finger compressions are out. Use the heel of one hand or the two-thumb encircling technique.'},
+  {k:'choice',p:'Alone with an infant. What ratio?',o:[['30 compressions to 2 breaths','good'],['15 compressions to 2 breaths','bad'],['Compressions only, no breaths','bad']],why:'One rescuer: 30:2. Two rescuers: 15:2.'},
+  C(30),B('Two gentle breaths — cover her mouth and nose, just enough for the chest to rise.'),
+  {k:'info',p:'Your coworker Maria runs in with the AED and the bag-mask.'},
+  {k:'choice',p:'Now there are two of you. What changes?',o:[['15:2, two-thumb encircling, Maria on the bag-mask','good'],['Nothing — keep doing 30:2','bad'],['Maria compresses with two fingers','bad']],why:'Two rescuers: 15:2, and two-thumb encircling hands works well with a partner managing the airway.'},
+  C(15),B(),
+  {k:'choice',p:'The AED is ready. Which pads?',o:[['Pediatric pads — or adult pads if that\'s all you have','good'],['Don\'t use an AED on an infant','bad'],['Cut the adult pads in half so they fit on her small chest','bad']],why:'2025 stresses using the AED right away. Pediatric pads or an attenuator if available; adult pads if not, placed so they don\'t touch (front and back works).'},
+  {k:'seq',p:'Run the AED. In order.',items:AED_SEQ,decoys:['Stop CPR to look for a pulse'],aed:true},
+  C(15),
+  {k:'choice',p:'EMS arrives. What do you tell them?',o:[['Found time, CPR started, shocks given, and how long','good'],['How long she was supposed to be napping','partial'],['That the parents have been called','bad']],why:'Times and actions first: when she was found, when CPR started, shocks, and duration.'}]},
+ child:{name:'Choking at the birthday party',scen:true,steps:()=>[
+  {k:'info',p:'At a birthday party, a 7-year-old suddenly can\'t talk or cough. She\'s clutching her throat.'},
+  {k:'choice',p:'What first?',o:[['Tell her you\'re going to help, then act','good'],['Run to find her parents first','bad'],['Pat her back gently and wait','partial']],why:'Severe obstruction: act right away.'},
+  {k:'alt',p:'5 back blows, then 5 abdominal thrusts. Repeat.',a:'Back blow',b:'Abdominal thrust',out:99,limit:2},
+  {k:'info',p:'It isn\'t coming out. She goes limp in your arms.'},
+  {k:'seq',p:'She\'s unresponsive. In order.',items:['Lower her to the floor','Shout for help — call 911, get the AED'],decoys:['Keep giving abdominal thrusts while she\'s limp']},
+  {k:'choice',p:'What next?',o:[['Start CPR, beginning with compressions','good'],['Check her pulse for a full 30 seconds before anything else','bad'],['Do a blind finger sweep of her throat','bad']],why:'An unresponsive choking victim gets CPR. Compressions can push the object out.'},
+  C(30),
+  {k:'choice',p:'Before you give breaths, what do you do?',o:[['Look in her mouth — remove it only if you can see it','good'],['Sweep a finger deep into her throat to find it','bad'],['Skip the breaths and keep compressing','partial']],why:'Look first. Remove an object only if you can see it. Never blind finger sweeps.'},
+  B(),C(30),
+  {k:'info',p:'You see the candy in her mouth after the next round and flick it out. EMS arrives moments later.'},
+  {k:'choice',p:'What do you tell EMS?',o:[['Choking, went unresponsive, CPR times, object removed','good'],['That she ate too much candy at the party','bad'],['That she\'s fine now — the candy is out','partial']],why:'What happened, what you did, and when. She still needs to be evaluated.'}]}};
+function runStart(id){const def=DEFS[id];RUN={id,def,steps:def.steps(),i:0,score:100,errs:[],m:{rates:[],inRange:[],pauses:[],longest:0,firstComp:null,recogEnd:null,toComp:null,pulse:[],fastBreaths:0,compEnd:null,aed:false},st:{}};$('runov').classList.remove('hidden');stepBegin();}
+function penal(p,msg){RUN.score=Math.max(0,RUN.score-p);RUN.errs.push(msg);RUN.st.fb=`<span style="color:#ff9a96">${esc(msg)}</span>`;}
+function stepBegin(){const s=RUN.steps[RUN.i];RUN.st={fb:''};if(!s){return runFinish();}
+  if(s.k==='choice')RUN.st.ord=shuf(s.o.map((_,i)=>i)),RUN.st.tried={};
+  if(s.k==='seq'){RUN.st.ord=shuf(s.items.concat(s.decoys||[]));RUN.st.next=0;}
+  if(s.k==='tap'){RUN.st.taps=[];}if(s.k==='breaths'||s.k==='rhythm'){RUN.st.taps=[];}
+  if(s.k==='alt'){RUN.st.cyc=0;RUN.st.inCyc=0;}
+  if(s.k==='timer'){RUN.st.t0=null;}
+  runRender();}
+function stepNext(){RUN.i++;stepBegin();}
+function liveRate(t){if(t.length<3)return null;const iv=[];for(let i=Math.max(1,t.length-6);i<t.length;i++)iv.push(t[i]-t[i-1]);return Math.round(60/(iv.reduce((a,b)=>a+b,0)/iv.length));}
+function runRender(){const s=RUN.steps[RUN.i],st=RUN.st;if(!s)return;let body='',btns='';
+  const hdr=`<div style="display:flex;justify-content:space-between;align-items:center"><span class="tag">${esc(RUN.def.name)}</span><span class="stat" style="margin:0">Score ${RUN.score}${TIER===0?` · step ${RUN.i+1} of ${RUN.steps.length}`:''}</span></div>`;
+  if(s.k==='info'){btns=`<button class="go" data-r="next" style="width:100%">Continue</button>`;}
+  if(s.k==='choice'){btns=st.solved?`<button class="go" data-r="next" style="width:100%">Continue</button>`:st.ord.map(i=>`<button class="opt" data-r="opt" data-i="${i}" ${st.tried[i]?'disabled':''}>${esc(s.o[i][0])}</button>`).join('');}
+  if(s.k==='seq'){btns=`<div class="row">${st.ord.map(x=>{const k=s.items.indexOf(x);const done=k>-1&&k<st.next;return `<button data-r="seq" data-x="${esc(x)}" class="${done?'on':''}" ${done?'disabled':''}>${esc(x)}</button>`;}).join('')}</div>`;}
+  if(s.k==='timer'){const run=st.t0!==null;body=`<div class="kv"><div><b id="tm-v">${run?(NOW()-st.t0).toFixed(0):'0'}</b><span>seconds</span></div><div><b>${s.lo}–${s.hi}</b><span>target</span></div><div><b>${RUN.m.pulse.length}</b><span>checks done</span></div></div>`;btns=`<button class="pad" data-r="timer">${run?esc(s.stop):esc(s.label)}</button>`;}
+  if(s.k==='tap'){const r=liveRate(st.taps);body=`<div class="kv"><div><b>${st.taps.length}/${s.n}</b><span>compressions</span></div><div><b style="color:${r===null?'inherit':r>=100&&r<=120?'#39e36f':'#ffc23d'}">${r===null?'—':r}</b><span>rate / min</span></div><div><b id="ps-v">${RUN.m.compEnd!==null&&!st.taps.length?(NOW()-RUN.m.compEnd).toFixed(0)+' s':'—'}</b><span>pause</span></div></div>`;btns=`<button class="pad" data-r="tap">PUSH</button>`;}
+  if(s.k==='breaths'){body=`<div class="kv"><div><b>${st.taps.length}/${s.n}</b><span>breaths</span></div><div><b id="ps-v">${RUN.m.compEnd!==null?(NOW()-RUN.m.compEnd).toFixed(0)+' s':'—'}</b><span>hands off</span></div><div><b>&lt;10 s</b><span>goal</span></div></div>`;btns=`<button class="pad" data-r="breath">Give a breath</button>`;}
+  if(s.k==='rhythm'){const last=st.taps.length?NOW()-st.taps[st.taps.length-1]:null;body=`<div class="kv"><div><b>${st.taps.length}/${s.n}</b><span>breaths</span></div><div><b id="rh-v">${last===null?'—':last.toFixed(0)+' s'}</b><span>since last</span></div><div><b>~6 s</b><span>goal</span></div></div>`;btns=`<button class="pad" data-r="rhythm">${esc(s.label)}</button>`;}
+  if(s.k==='alt'){body=`<div class="kv"><div><b>${st.cyc+1}</b><span>round</span></div><div><b>${st.inCyc<5?st.inCyc:5}/5</b><span>${esc(s.a.toLowerCase())}s</span></div><div><b>${st.inCyc>5?st.inCyc-5:0}/5</b><span>${esc(s.b.toLowerCase())}s</span></div></div>`;btns=`<div class="row"><button class="pad" style="height:110px;font-size:20px" data-r="alt" data-x="a">${esc(s.a)}</button><button class="pad" style="height:110px;font-size:20px" data-r="alt" data-x="b">${esc(s.b)}</button></div>`;}
+  $('run-box').innerHTML=`${hdr}<p style="font-size:17px;margin:10px 0">${esc(s.p)}</p>${body}${btns}<p id="run-fb" style="font-size:15px;min-height:22px;margin:8px 0 0">${st.fb||''}</p><button data-r="quit" style="width:100%;margin-top:8px">Stop and go back</button>`;}
+function runAct(ds){if(!RUN)return;const s=RUN.steps[RUN.i],st=RUN.st,a=ds.r,t=NOW(),m=RUN.m;
+  if(a==='quit'){$('runov').classList.add('hidden');RUN=null;return;}
+  if(a==='next'){stepNext();return;}
+  if(s.k==='choice'&&a==='opt'){const o=s.o[+ds.i];if(o[1]==='good'){st.solved=true;st.fb=`<span style="color:#7fe3a4"><b>Right.</b></span> ${esc(s.why)}`;}else{st.tried[+ds.i]=1;penal(o[1]==='partial'?5:10,o[1]==='partial'?'Not the best choice — try again.':'No — try again.');if(TIER===0)st.fb+=` <span style="color:var(--soft)">${esc(s.why)}</span>`;}}
+  if(s.k==='seq'&&a==='seq'){const want=s.items[st.next];if(ds.x===want){st.next++;st.fb='';if(st.next>=s.items.length){if(s.aed)m.aed=true;stepNext();return;}}else penal(5,TIER===0?`Not yet. Next: ${want}.`:'Out of order.');}
+  if(s.k==='timer'&&a==='timer'){if(st.t0===null){st.t0=t;}else{const d=t-st.t0;m.pulse.push(d);if(d<s.lo)penal(5,`Only ${d.toFixed(0)} seconds — take at least ${s.lo}.`);else if(d>s.hi+.5)penal(5,`${d.toFixed(0)} seconds — never more than ${s.hi}.`);if(s.recog)m.recogEnd=t;stepNext();return;}}
+  if(s.k==='tap'&&a==='tap'){if(!st.taps.length){if(m.firstComp===null){m.firstComp=t;if(m.recogEnd!==null){m.toComp=t-m.recogEnd;if(m.toComp>10)penal(5,`${m.toComp.toFixed(0)} seconds from recognizing arrest to the first compression — start within 10.`);}}
+      if(m.compEnd!==null){const p=t-m.compEnd;if(!m.aed){m.pauses.push(p);m.longest=Math.max(m.longest,p);if(p>10)penal(5,`Hands off for ${p.toFixed(0)} seconds — keep pauses under 10.`);}m.aed=false;}}
+    st.taps.push(t);if(st.taps.length>=s.n){const iv=[];for(let i=1;i<st.taps.length;i++)iv.push(st.taps[i]-st.taps[i-1]);const W=Math.min(5,iv.length),rates=[];for(let i=W-1;i<iv.length;i++){let sum=0;for(let k=i-W+1;k<=i;k++)sum+=iv[k];rates.push(60/(sum/W));}const inR=rates.filter(r=>r>=100&&r<=120).length/rates.length;const avg=60/(iv.reduce((a,b)=>a+b,0)/iv.length);
+      m.rates.push(avg);m.inRange.push(inR);if(inR<.5)penal(10,`Rate was ${Math.round(avg)} a minute — only ${Math.round(inR*100)}% of compressions in the 100–120 zone.`);else if(inR<.75)penal(5,`Rate ${Math.round(avg)} — ${Math.round(inR*100)}% in the zone. Aim for steadier.`);
+      m.compEnd=t;stepNext();return;}}
+  if(s.k==='breaths'&&a==='breath'){if(st.taps.length&&t-st.taps[st.taps.length-1]<.8){m.fastBreaths++;penal(3,'Too fast — each breath takes about 1 second.');}st.taps.push(t);if(st.taps.length>=s.n){stepNext();return;}}
+  if(s.k==='rhythm'&&a==='rhythm'){if(st.taps.length){const d=t-st.taps[st.taps.length-1];if(d<s.lo)penal(3,`${d.toFixed(1)} seconds — too fast. One every 6 seconds.`);else if(d>s.hi)penal(3,`${d.toFixed(1)} seconds — too slow. One every 6 seconds.`);else st.fb='<span style="color:#7fe3a4">Good timing.</span>';}
+    st.taps.push(t);if(st.taps.length>=s.n){stepNext();return;}}
+  if(s.k==='alt'&&a==='alt'){const want=st.inCyc<5?'a':'b';if(ds.x!==want){penal(5,want==='a'?`Finish 5 ${s.a.toLowerCase()}s first.`:`Now 5 ${s.b.toLowerCase()}s.`);}
+    else{st.inCyc++;st.fb='';if(st.inCyc>=10){st.cyc++;st.inCyc=0;if(st.cyc>=(s.limit||s.out)){stepNext();return;}}else if(st.cyc+1>=s.out&&st.inCyc===(s.out%2?7:3)&&!s.limit){stepNext();return;}}}
+  runRender();}
+function runTick(){if(!RUN)return;const s=RUN.steps[RUN.i];if(!s)return;const t=NOW();
+  if(s.k==='timer'&&RUN.st.t0!==null&&$('tm-v'))$('tm-v').textContent=(t-RUN.st.t0).toFixed(0);
+  if((s.k==='tap'&&!RUN.st.taps.length||s.k==='breaths')&&RUN.m.compEnd!==null&&$('ps-v')){const p=t-RUN.m.compEnd;$('ps-v').textContent=p.toFixed(0)+' s';$('ps-v').style.color=p>10?'#ff9a96':'';}
+  if(s.k==='rhythm'&&RUN.st.taps.length&&$('rh-v'))$('rh-v').textContent=(t-RUN.st.taps[RUN.st.taps.length-1]).toFixed(0)+' s';}
+function runFinish(){const m=RUN.m,def=RUN.def,id=RUN.id;const avg=m.rates.length?Math.round(m.rates.reduce((a,b)=>a+b,0)/m.rates.length):null,inR=m.inRange.length?Math.round(m.inRange.reduce((a,b)=>a+b,0)/m.inRange.length*100):null;
+  const rows=[...(avg!==null?[['Average compression rate',avg+' / min (100–120)'],['Compressions in the zone',inR+'%']]:[]),...(m.pauses.length?[['Longest hands-off pause',m.longest.toFixed(1)+' s (under 10)']]:[]),...(m.toComp!==null?[['Recognition to first compression',m.toComp.toFixed(1)+' s (within 10)']]:[]),...(m.pulse.length?[['Pulse checks',m.pulse.map(x=>x.toFixed(0)+' s').join(', ')+' (5–10)']]:[])];
+  const score=RUN.score,errs=RUN.errs.slice();record(def.scen?'scenario':'station',id,score);$('runov').classList.add('hidden');RUN=null;
+  showDone(def.name,score,`${rows.length?`<div>${rows.map(([a,b])=>`<div class="mrow"><span>${a}</span><b style="text-align:right">${esc(b)}</b></div>`).join('')}</div>`:''}${errs.length?`<p style="font-size:14px;margin-top:8px"><b>Feedback:</b> ${errs.map(esc).join(' · ')}</p>`:'<p style="font-size:14px;color:var(--soft);margin-top:8px">Clean run.</p>'}`,()=>runStart(id));}
+$('run-box').onclick=e=>{const b=e.target.closest&&e.target.closest('[data-r]');if(b)runAct(b.dataset);};
+document.querySelectorAll('[data-run]').forEach(b=>b.onclick=()=>runStart(b.dataset.run));
+/* =================== exam practice + drills =================== */
+const EXAM=[
+ ['What is the correct compression rate for adults, children, and infants?','100 to 120 per minute',['80 to 100 per minute','120 to 140 per minute — faster is better'],'100–120 for every age.'],
+ ['What is the correct compression depth for an adult?','At least 2 inches, not more than 2.4',['About 1 inch','At least 3 inches, as deep as you can push'],'At least 2 inches (5 cm) but not more than 2.4 inches (6 cm).'],
+ ['What is the correct compression depth for an infant?','About 1½ inches',['About ½ inch','At least 2½ inches'],'About 1½ inches (4 cm) — a third of the chest depth.'],
+ ['How long should a breathing and pulse check take?','At least 5 seconds, no more than 10',['Exactly 30 seconds','As long as it takes to be completely sure'],'5 to 10 seconds. If unsure, start CPR.'],
+ ['Two rescuers are performing CPR on a child. What is the ratio?','15 compressions to 2 breaths',['30 compressions to 2 breaths, same as adults','5 compressions to 1 breath'],'Children and infants: 15:2 with two rescuers, 30:2 with one.'],
+ ['One rescuer is performing CPR on an adult. What is the ratio?','30 compressions to 2 breaths',['15 compressions to 2 breaths with two rescuers','10 compressions to 1 breath'],'Adults: 30:2 with one or two rescuers.'],
+ ['Which infant compression technique is no longer recommended (2025)?','Two fingers on the breastbone',['Two-thumb encircling hands','The heel of one hand'],'2025 removed the two-finger technique.'],
+ ['What should you do immediately after the AED delivers a shock?','Resume compressions',['Check for a pulse','Give two rescue breaths first'],'Back to compressions right away.'],
+ ['How often should compressors switch?','About every 2 minutes',['Every 30 seconds','Only when the compressor says they\'re exhausted'],'About every 2 minutes (5 cycles), in under 5 seconds.'],
+ ['What is the maximum time to interrupt compressions?','Less than 10 seconds',['Less than 30 seconds','Less than a full minute'],'Keep every pause under 10 seconds.'],
+ ['An adult has a pulse but is not breathing normally. How often do you give breaths?','1 every 6 seconds',['1 every 2 seconds','2 every 30 seconds'],'About 10 breaths a minute for an adult with a pulse.'],
+ ['An infant has a pulse but is not breathing normally. How often do you give breaths?','1 every 2 to 3 seconds',['1 every 6 seconds','1 every 10 seconds, to avoid overinflation'],'20–30 breaths a minute for infants and children with a pulse.'],
+ ['Where do you check the pulse on an infant?','Brachial artery, inside the upper arm',['Carotid artery in the neck','Radial artery at the wrist'],'Brachial for infants; carotid (or femoral) for children; carotid for adults.'],
+ ['What is the 2025 sequence for a choking adult who cannot speak?','5 back blows, then 5 abdominal thrusts',['Abdominal thrusts only','5 chest thrusts, then a finger sweep'],'2025 added back blows first, alternating with abdominal thrusts.'],
+ ['What do you do for a choking infant?','5 back blows, then 5 chest thrusts',['5 abdominal thrusts','Blind finger sweeps'],'Infants: back blows and chest thrusts — never abdominal thrusts.'],
+ ['A choking victim becomes unresponsive. What do you do?','Call for help and start CPR',['Keep giving abdominal thrusts','Do a blind finger sweep'],'Start CPR. Look in the mouth before breaths; remove only what you can see.'],
+ ['What is the main danger of giving breaths too big or too fast?','Less blood returns to the heart',['The patient may wake up too fast','The AED cannot analyze'],'Overventilation raises chest pressure and lowers blood return to the heart.'],
+ ['Which describes closed-loop communication?','Order, repeat back, then report done',['Shouting your orders loudly to the whole room','Giving every order twice'],'The receiver repeats the task and reports when it\'s complete.'],
+ ['When should you use an AED on a child?','As soon as it\'s available',['Only if over 8 years old','Never — AEDs are for adults'],'Use it right away — pediatric pads or attenuator if available, adult pads if not.'],
+ ['A suspected opioid overdose patient has no pulse. What comes first?','High-quality CPR',['Naloxone, then wait','Rescue breaths only'],'CPR first. Naloxone when logistically possible, never instead of compressions.'],
+ ['A child has a pulse of 50 with poor perfusion despite breaths. What do you do?','Start CPR',['Keep giving breaths only','Wait for the pulse to rise'],'Heart rate below 60 with poor perfusion in a child or infant means start CPR.'],
+ ['Where do adult hands go for compressions?','Lower half of the breastbone',['Left side of the chest','Upper third of the breastbone'],'Center of the chest, lower half of the sternum.'],
+ ['What does full chest recoil mean?','Letting the chest come all the way back up',['Pushing faster on the upstroke','Keeping light pressure on the chest between pushes'],'Leaning on the chest stops it from refilling with blood.'],
+ ['The AED says "No shock advised." What do you do?','Resume CPR immediately',['Stop — the patient has a pulse','Turn off the AED'],'No shock advised does not mean a pulse. Keep going.']].map(([q,a,d,why])=>({q,a,d,why}));
+const DRILLS={
+ numbers:{name:'Numbers that matter',bank:()=>EXAM.filter((_,i)=>[0,1,2,3,4,5,9,10,11].includes(i))},
+ ages:{name:'Adult vs. child vs. infant',bank:()=>EXAM.filter((_,i)=>[2,4,6,11,12,15,18,20].includes(i))},
+ choke:{name:'Choking by age',bank:()=>[['Adult can\'t speak or cough. First?','5 back blows',['5 chest thrusts','A blind finger sweep'],'2025: back blows first for adults and children.'],['Infant can\'t cry or cough. After 5 back blows?','5 chest thrusts',['5 abdominal thrusts','A blind finger sweep'],'Infants: chest thrusts, never abdominal thrusts.'],['Child can\'t speak. After 5 back blows?','5 abdominal thrusts',['5 chest thrusts','Wait for coughing'],'Children: alternate back blows and abdominal thrusts.'],['Adult is coughing forcefully. What do you do?','Encourage coughing, stay close',['Start back blows now','Start abdominal thrusts'],'A forceful cough is moving air. Watch closely and be ready.'],['Victim goes unresponsive. Before breaths?','Look in the mouth',['Do a finger sweep','Give abdominal thrusts'],'Look; remove only what you can see.']].map(([q,a,d,why])=>({q,a,d,why}))}};
+let QZ=null;
+function quizStart(name,bank,n,kind,id){const qs=shuf(bank).slice(0,n).map(x=>Object.assign({},x,{ord:shuf([x.a,...x.d])}));QZ={name,qs,i:0,right:0,kind,id};$('quizov').classList.remove('hidden');quizQ();}
+function quizQ(){const q=QZ.qs[QZ.i];$('qz-title').textContent=QZ.name;$('qz-meta').textContent=`${QZ.i+1} of ${QZ.qs.length} · ${QZ.right} right`;
+  $('qz-body').innerHTML=`<p style="font-size:18px;margin:0 0 10px">${esc(q.q)}</p>${q.ord.map((o,i)=>`<button class="opt" data-q="ans" data-i="${i}">${esc(o)}</button>`).join('')}<p id="qz-fb" style="font-size:15px"></p>`;$('qz-foot').innerHTML='<button data-q="quit" style="width:100%">Quit</button>';}
+function quizAct(ds){const a=ds.q;if(a==='quit'){$('quizov').classList.add('hidden');QZ=null;return;}
+  if(a==='menu'){drillMenu();return;}if(a==='again'){const k=QZ.kind,id=QZ.id;k==='exam'?examStart():quizStart(DRILLS[id].name,DRILLS[id].bank(),DRILLS[id].bank().length,'drill',id);return;}
+  if(a==='go'){quizStart(DRILLS[ds.k].name,DRILLS[ds.k].bank(),DRILLS[ds.k].bank().length,'drill',ds.k);return;}
+  if(a==='ans'){const q=QZ.qs[QZ.i];if(q.done)return;q.done=true;const ok=q.ord[+ds.i]===q.a;if(ok)QZ.right++;$('qz-fb').innerHTML=`<b style="color:${ok?'#7fe3a4':'#ff9a96'}">${ok?'Right.':'Answer: '+esc(q.a)+'.'}</b> ${esc(q.why)}`;$('qz-foot').innerHTML=`<button data-q="next" class="go" style="width:100%">${QZ.i+1<QZ.qs.length?'Next':'Results'}</button>`;}
+  if(a==='next'){QZ.i++;if(QZ.i<QZ.qs.length)quizQ();else{const sc=Math.round(QZ.right/QZ.qs.length*100);record(QZ.kind,QZ.id,sc);$('qz-body').innerHTML=`<div class="big">${sc}</div><p>${QZ.right} of ${QZ.qs.length} right.${QZ.kind==='exam'?(sc>=85?' Solid — keep it sharp.':' Review the lesson and try again — aim for 85% or better.'):''}</p>`;$('qz-foot').innerHTML=`<div class="row"><button data-q="${QZ.kind==='exam'?'quit':'menu'}">${QZ.kind==='exam'?'Done':'All drills'}</button><button data-q="again" class="go">Again</button></div>`;}}}
+function examStart(){quizStart('Exam practice',EXAM,15,'exam','exam');}
+function drillMenu(){QZ={kind:'drill'};$('qz-title').textContent='Quick drills';$('qz-meta').textContent='';$('qz-body').innerHTML=Object.keys(DRILLS).map(k=>`<button class="scen" data-q="go" data-k="${k}"><b>${DRILLS[k].name}</b></button>`).join('')+`<button class="scen" id="dr-tempo"><b>Compression tempo</b><span>Same as the practice station — 30:2, three rounds</span></button>`;$('qz-foot').innerHTML='<button data-q="quit" class="go" style="width:100%">Back</button>';$('quizov').classList.remove('hidden');$('dr-tempo').onclick=()=>{$('quizov').classList.add('hidden');runStart('tempo');};}
+$('qz-body').onclick=e=>{const b=e.target.closest&&e.target.closest('[data-q]');if(b)quizAct(b.dataset);};$('qz-foot').onclick=$('qz-body').onclick;
+$('h-exam').onclick=examStart;$('h-drills').onclick=drillMenu;
+/* =================== reference, about, progress =================== */
+$('h-ref').onclick=()=>info(`<h2>Pocket reference</h2><div class="mrow"><span>Rate (all ages)</span><b>100–120 / min</b></div><div class="mrow"><span>Depth: adult</span><b>2 – 2.4 in</b></div><div class="mrow"><span>Depth: child</span><b>about 2 in (⅓ chest)</b></div><div class="mrow"><span>Depth: infant</span><b>about 1½ in (⅓ chest)</b></div><div class="mrow"><span>Ratio: adult</span><b>30:2</b></div><div class="mrow"><span>Ratio: child/infant, 2 rescuers</span><b>15:2</b></div><div class="mrow"><span>Pulse/breathing check</span><b>5–10 s</b></div><div class="mrow"><span>Pauses</span><b>under 10 s</b></div><div class="mrow"><span>Switch compressors</span><b>every ~2 min</b></div><div class="mrow"><span>Rescue breaths: adult</span><b>1 every 6 s</b></div><div class="mrow"><span>Rescue breaths: child/infant</span><b>1 every 2–3 s</b></div><div class="mrow"><span>Infant technique (2025)</span><b>2 thumbs or heel of 1 hand</b></div><div class="mrow"><span>Choking: adult/child (2025)</span><b>5 back blows ↔ 5 abdominal</b></div><div class="mrow"><span>Choking: infant</span><b>5 back blows ↔ 5 chest</b></div><p style="font-size:14px;color:var(--soft);margin-top:10px">After a shock: straight back to compressions. Full recoil every time. Don't overventilate.</p>`);
+$('h-about').onclick=()=>info(`<h2>About BLS Ready</h2><p>BLS Ready is a free practice tool for Basic Life Support skills, in the same family as Charge the Line, Patient Contact, and Bleed Control. It follows the 2025 resuscitation guidelines for adult, child, and infant CPR, AED use, rescue breathing, and choking.</p><p><b>It is practice, not certification.</b> Only an official course issues a card. Find an American Heart Association BLS course at cpr.heart.org.</p><p class="legal">American Heart Association, BLS Provider, Heartsaver, and related names are trademarks of the American Heart Association. This app is independent and is not affiliated with or endorsed by the American Heart Association. Content is written independently and is not taken from AHA course materials. Version ${APP_VERSION}.</p>`);
+$('h-prog').onclick=()=>{const p=load();const R=p.runs||[];const best=(k,id)=>{const r=R.filter(x=>x.kind===k&&x.id===id);return r.length?Math.max(...r.map(x=>x.score)):null;};
+  const line=(n,b)=>`<div class="mrow"><span>${esc(n)}</span><b style="${b===null?'color:var(--soft)':''}">${b===null?'not yet':b}</b></div>`;
+  info(`<h2>My progress</h2><input id="p-name" placeholder="Your name" value="${esc(p.name||'')}" style="margin-bottom:6px"><input id="p-dept" placeholder="Department or organization" value="${esc(p.dept||'')}" style="margin-bottom:10px">
+   <div class="sec">LESSON</div>${line('The lesson',best('lesson','lesson'))}<div class="sec">SKILLS</div>${['tempo','adult','infant','bvm','chokeA','chokeI'].map(i=>line(DEFS[i].name,best('station',i))).join('')}
+   <div class="sec">SCENARIOS</div>${['team','opioid','baby','child'].map(i=>line(DEFS[i].name,best('scenario',i))).join('')}<div class="sec">TESTS</div>${line('Exam practice',best('exam','exam'))}${Object.keys(DRILLS).map(k=>line(DRILLS[k].name,best('drill',k))).join('')}
+   <button id="p-csv" style="width:100%;margin-top:10px">Download practice record (CSV)</button>`);
+  $('p-csv').onclick=()=>{const q=load();q.name=$('p-name').value.trim();q.dept=$('p-dept').value.trim();save(q);const nm={lesson:'Lesson',station:'Skill',scenario:'Scenario',exam:'Exam practice',drill:'Drill'};
+    const label=r=>r.kind==='lesson'?'The lesson':r.kind==='exam'?'Exam practice':r.kind==='drill'?DRILLS[r.id].name:DEFS[r.id].name;
+    const rows=[['Name','Organization','Type','Activity','Date','Mode','Score']].concat((q.runs||[]).map(r=>[q.name||'',q.dept||'',nm[r.kind],label(r),r.d.slice(0,16).replace('T',' '),['Guided','Recall'][r.tier]||'',r.score]));
+    const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='bls-ready-practice-record.csv';a.click();}catch(e){}};};
+/* =================== boot =================== */
+if('serviceWorker' in navigator&&location.protocol==='https:')window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
+showHome();setInterval(runTick,200);
+</script>
+</body>
+</html>
