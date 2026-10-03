@@ -11,6 +11,6 @@ global.window=Object.assign(global.window||{},{addEventListener(){}});global.loc
 Object.defineProperty(globalThis,'navigator',{value:{userAgent:'qa'},configurable:true,writable:true});
 global.setInterval=()=>{};global.__T=global.__T||0;global.performance={now:()=>global.__T*1000};
 global.Blob=function(p){this.parts=p;};global.URL={createObjectURL:b=>{global.__csv=b.parts.join('');return 'x';}};
-const api=new Function(require('fs').readFileSync(require('path').join(__dirname,'..','preconnect-core.js'),'utf8')+'\n'+js+';return {pcDrill,pcDrillStart,pcDrillWho,pcDrillStamp,pcDrillBind,pcShuf,pcLessonStart,pcLessonAct,pcQuizStart,pcQuizAct,showHome,showDone,readiness,homeRender,pcSpacing,pcBestPrev,pcDebriefBody,settings,setSetting,countUp,haptic,runFinish,RUN:()=>RUN,LS:()=>LS,QZ:()=>QZ,DEFS,LESSON,EXAM,DRILLS,runStart,runAct,lessonStart,lessonAct,quizAct,examStart,drillMenu,$,load,setTier:t=>{TIER=t}};')();
+const api=new Function(require('fs').readFileSync(require('path').join(__dirname,'..','preconnect-core.js'),'utf8')+'\n'+js+';return {pcCue,pcBuzz,pcFx,pcMetro,pcMetroState,runUpd,pcDrill,pcDrillStart,pcDrillWho,pcDrillStamp,pcDrillBind,pcShuf,pcLessonStart,pcLessonAct,pcQuizStart,pcQuizAct,showHome,showDone,readiness,homeRender,pcSpacing,pcBestPrev,pcDebriefBody,settings,setSetting,countUp,haptic,runFinish,RUN:()=>RUN,LS:()=>LS,QZ:()=>QZ,DEFS,LESSON,EXAM,DRILLS,runStart,runAct,lessonStart,lessonAct,quizAct,examStart,drillMenu,$,load,setTier:t=>{TIER=t}};')();
 return {api,els,store};}
 module.exports={boot};

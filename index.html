@@ -144,7 +144,7 @@ body.tv{max-width:1100px}.brand{color:var(--red2)}@media (min-width:1000px){body
  <div class="set"><div class="k">High contrast<small>Black background, brighter text: for daylight.</small></div><div class="seg2" data-set="contrast"><button data-val="normal">Off</button><button data-val="high">On</button></div></div>
  <div class="set"><div class="k">Motion<small>Auto follows your phone's Reduce Motion setting.</small></div><div class="seg2" data-set="motion"><button data-val="auto">Auto</button><button data-val="off">Off</button></div></div>
  <div class="sec">Feedback</div>
- <div class="set"><div class="k">Sound<small>Monitor beeps, metronome, voice prompts, in modules that have them.</small></div><div class="seg2" data-set="sound"><button data-val="off">Off</button><button data-val="on">On</button></div></div>
+ <div class="set"><div class="k">Sound<small>A metronome for compressions, a tone for right and wrong, a chime when you finish, and Patient Contact's monitor.</small></div><div class="seg2" data-set="sound"><button data-val="off">Off</button><button data-val="on">On</button></div></div>
  <div class="set"><div class="k">Haptics<small>A tap you can feel on compressions and mistakes.</small></div><div class="seg2" data-set="haptics"><button data-val="off">Off</button><button data-val="on">On</button></div></div>
  <div class="sec">Privacy</div>
  <div class="set"><div class="k">Anonymous statistics<small>Counts like "someone finished the infant station." Never names. <a href="../privacy.html" style="color:var(--acc)">Details</a></small></div><div class="seg2" data-set="stats"><button data-val="off">Off</button><button data-val="on">On</button></div></div>
@@ -153,7 +153,7 @@ body.tv{max-width:1100px}.brand{color:var(--red2)}@media (min-width:1000px){body
 <div class="overlay hidden" id="infoov" style="z-index:15"><div class="box"><div id="info-b"></div><button class="go" id="info-close" style="width:100%;margin-top:10px">Close</button></div></div>
 <script>
 /* =================== core =================== */
-const APP_VERSION='0.10.0';
+const APP_VERSION='0.11.0';
 /* Screen wake lock (Milestone 1): keeps the phone from dimming or locking during a timed skill.
    On only while an activity runs: keepAwake(true) when it starts, keepAwake(false) back at the menu or on the result screen. */
 const WAKE={s:null,want:false};
@@ -177,7 +177,7 @@ function showHome(){keepAwake(false);['runov','lessonov','quizov','doneov'].forE
 document.querySelectorAll('[data-tier]').forEach(b=>b.onclick=()=>{TIER=+b.dataset.tier;showHome();});
 let AGAIN=null;
 let DONEGUARD=0;
-function showDone(t,score,html,again){keepAwake(false);DONEGUARD=NOW()+.7;$('done-t').textContent=t;countUp($('done-s'),score,600);$('done-b').innerHTML=html;AGAIN=again;$('doneov').classList.remove('hidden');}
+function showDone(t,score,html,again){keepAwake(false);pcMetro(0);pcFx('done');DONEGUARD=NOW()+.7;$('done-t').textContent=t;countUp($('done-s'),score,600);$('done-b').innerHTML=html;AGAIN=again;$('doneov').classList.remove('hidden');}
 $('done-again').onclick=()=>{if(NOW()<DONEGUARD)return;$('doneov').classList.add('hidden');if(AGAIN)AGAIN();};$('done-menu').onclick=()=>{if(NOW()<DONEGUARD)return;$('doneov').classList.add('hidden');showHome();};
 function info(h){$('info-b').innerHTML=h;$('infoov').classList.remove('hidden');}$('info-close').onclick=()=>$('infoov').classList.add('hidden');
 /* =================== the lesson =================== */
@@ -343,14 +343,15 @@ const DEFS={
   {k:'info',p:'You see the candy in her mouth after the next round and flick it out. EMS arrives moments later.'},
   {k:'choice',p:'What do you tell EMS?',o:[['Choking, went unresponsive, CPR times, object removed','good'],['That she ate too much candy at the party','bad'],['That she\'s fine now — the candy is out','partial']],why:'What happened, what you did, and when. She still needs to be evaluated.'}]}};
 function runStart(id){keepAwake(true);const def=DEFS[id];pca('begin','bls',id,()=>RUN&&RUN.steps[RUN.i]?`step-${RUN.i+1}-${RUN.steps[RUN.i].k}`:'');RUN={id,def,steps:def.steps(),i:0,score:100,errs:[],log:[],msg:null,t0:NOW(),sets:0,m:{rates:[],inRange:[],pauses:[],longest:0,firstComp:null,recogEnd:null,toComp:null,pulse:[],fastBreaths:0,compEnd:null,aed:false},st:{}};$('runov').classList.remove('hidden');stepBegin();}
-function say(html,cls){RUN.msg={html,cls};}
-function penal(p,msg){RUN.score=Math.max(0,RUN.score-p);RUN.errs.push(msg);RUN.stepErr=(RUN.stepErr||0)+1;say(esc(msg),'bad');}
+function say(html,cls){RUN.msg={html,cls};if(cls==='good')pcCue('good');}
+function penal(p,msg){RUN.score=Math.max(0,RUN.score-p);RUN.errs.push(msg);RUN.stepErr=(RUN.stepErr||0)+1;say(esc(msg),'bad');pcFx('bad');}
 function stepBegin(){const s=RUN.steps[RUN.i];RUN.st={};RUN.stepErr=0;if(!s){return runFinish();}
   RUN.guard=NOW()+.45;   // momentum taps from the last step can't land on this one
   if(s.k==='choice')RUN.st.ord=shuf(s.o.map((_,i)=>i)),RUN.st.tried={};
   if(s.k==='seq'){RUN.st.ord=shuf(s.items.concat(s.decoys||[]));RUN.st.next=0;}
   if(s.k==='tap'||s.k==='breaths'||s.k==='rhythm')RUN.st.taps=[];
   if(s.k==='alt'){RUN.st.cyc=0;RUN.st.inCyc=0;}if(s.k==='timer')RUN.st.t0=null;
+  pcMetro(s.k==='tap'&&TIER===0?110:0);
   runBuild();}
 const STEPNAME=s=>s.k==='seq'?(s.aed?'AED steps in order':'First actions in order'):s.k==='timer'?'Breathing and pulse check':s.k==='tap'?`${s.n} compressions`:s.k==='breaths'?'Two breaths':s.k==='rhythm'?`${s.n} breaths, one every ${s.lo<3?'2–3':'6'} seconds`:s.k==='alt'?`${s.a}s and ${s.b.toLowerCase()}s`:(s.p.split(/(?<=[.?])\s/).slice(-1)[0]||s.p).slice(0,70);
 function stepNext(detail){const s=RUN.steps[RUN.i];if(s&&s.k!=='info')RUN.log.push({name:STEPNAME(s),ok:!RUN.stepErr,detail:detail||'',at:NOW()-RUN.t0});RUN.i++;stepBegin();}
@@ -385,11 +386,11 @@ function runUpd(){if(!RUN)return;const s=RUN.steps[RUN.i],st=RUN.st;if(!s)return
     if(!st.taps.length&&m.compEnd!==null){const p=t-m.compEnd;set('kv-c',p.toFixed(0)+' s');const c=$('kv-c');if(c)c.style.color=p>10?'#ff9a96':'';}else if(st.taps.length)set('kv-c','—');
     if(TIER===0&&r!==null){coach=r>120?'Slow down a little':r<100?'Push faster':'Good rate — keep it';col=r>=100&&r<=120?'#39e36f':'#ffc23d';}}
   if(s.k==='breaths'){set('kv-a',`${st.taps.length}/${s.n}`);if(m.compEnd!==null){const p=t-m.compEnd;set('kv-c',p.toFixed(0)+' s');const c=$('kv-c');if(c)c.style.color=p>10?'#ff9a96':'';}}
-  if(s.k==='rhythm'){set('kv-a',`${st.taps.length}/${s.n}`);if(st.taps.length){const d=t-st.taps[st.taps.length-1];set('kv-b',d.toFixed(0)+' s');const pad=$('run-pad');if(pad&&TIER===0)pad.classList.toggle('hot',d>=s.lo+.5);if(TIER===0){coach=d>=s.lo+.5?'Breathe now':'…wait…';col=d>=s.lo+.5?'#39e36f':'var(--soft)';}}}
+  if(s.k==='rhythm'){set('kv-a',`${st.taps.length}/${s.n}`);if(st.taps.length){const d=t-st.taps[st.taps.length-1];set('kv-b',d.toFixed(0)+' s');const pad=$('run-pad');if(pad&&TIER===0)pad.classList.toggle('hot',d>=s.lo+.5);if(TIER===0){coach=d>=s.lo+.5?'Breathe now':'…wait…';col=d>=s.lo+.5?'#39e36f':'var(--soft)';if(d>=s.lo+.5&&!st.cued){st.cued=true;pcFx('breathe');}}}}
   if(s.k==='alt'){set('kv-a',st.cyc+1);set('kv-b',`${Math.min(5,st.inCyc)}/5`);set('kv-c',`${st.inCyc>5?st.inCyc-5:0}/5`);if(TIER===0){coach=st.inCyc<5?`Next: ${s.a.toLowerCase()}`:`Next: ${s.b.toLowerCase()}`;}}
   const ce=$('run-coach');if(ce){set('run-coach',coach);ce.style.color=col;}}
 function runAct(ds){if(!RUN)return;const s=RUN.steps[RUN.i],st=RUN.st,a=ds.r,t=NOW(),m=RUN.m;
-  if(a==='quit'){pca('abandon');$('runov').classList.add('hidden');RUN=null;return;}
+  if(a==='quit'){pca('abandon');pcMetro(0);$('runov').classList.add('hidden');RUN=null;return;}
   if(t<RUN.guard&&a!=='over')return;     // ignore momentum taps for half a second after a step changes
   if(a==='next'){stepNext();return;}
   if(s.k==='choice'&&a==='opt'){const o=s.o[+ds.i];if(st.tried[+ds.i])return;if(o[1]==='good'){st.solved=true;say(`<b>Right.</b> ${esc(s.why)}`,'good');}else{st.tried[+ds.i]=1;penal(o[1]==='partial'?5:10,o[1]==='partial'?'Not the best choice — try again.':'No — try again.');if(TIER===0)RUN.msg.html+=` <span style="color:var(--soft)">${esc(s.why)}</span>`;}runBuild();return;}
@@ -407,7 +408,7 @@ function runAct(ds){if(!RUN)return;const s=RUN.steps[RUN.i],st=RUN.st,a=ds.r,t=N
   if(s.k==='breaths'&&a==='over'){st.over=(st.over||0)+1;if(TIER===0&&st.over===1)say('That\'s past the count — stop at the number, then breathe.','');runUpd();return;}
   if(s.k==='breaths'&&a==='breath'){if(st.taps.length&&t-st.taps[st.taps.length-1]<.8){m.fastBreaths++;penal(3,'Too fast — each breath takes about 1 second.');}else say(`Breath ${st.taps.length+1}${st.taps.length+1<s.n?'…':' — now back on the chest.'}`,'');st.taps.push(t);if(st.taps.length>=s.n){stepNext();return;}runUpd();return;}
   if(s.k==='rhythm'&&a==='rhythm'){if(st.taps.length){const d=t-st.taps[st.taps.length-1];if(d<s.lo)penal(3,`${d.toFixed(1)} seconds — too fast. One every ${s.every||'6'} seconds.`);else if(d>s.hi)penal(3,`${d.toFixed(1)} seconds — too slow. One every ${s.every||'6'} seconds.`);else say(`✓ ${d.toFixed(1)} seconds — good timing.`,'good');}else say('First breath in. Now count…','');
-    st.taps.push(t);if(st.taps.length>=s.n){stepNext();return;}runUpd();return;}
+    st.taps.push(t);st.cued=false;if(st.taps.length>=s.n){stepNext();return;}runUpd();return;}
   if(s.k==='alt'&&a==='alt'){const want=st.inCyc<5?'a':'b';if(ds.x!==want){penal(5,want==='a'?`Finish 5 ${s.a.toLowerCase()}s first.`:`Now 5 ${s.b.toLowerCase()}s.`);}
     else{st.inCyc++;if(st.inCyc>=10){st.cyc++;st.inCyc=0;if(st.cyc>=(s.limit||s.out)){stepNext(`${st.cyc} round${st.cyc>1?'s':''}`);return;}}else if(st.cyc+1>=s.out&&st.inCyc===(s.out%2?7:3)&&!s.limit){say('✓ It\'s out!','good');stepNext(`cleared in round ${st.cyc+1}`);return;}}runUpd();return;}
   runUpd();}

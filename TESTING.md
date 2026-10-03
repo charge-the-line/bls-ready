@@ -105,3 +105,7 @@ Foundation fixes: fonts served from this site, screen wake lock, finger-sized bu
 - `balance` still runs over the lesson, every choice step and the bank (93 items).
 - `record`: readiness is 1 of 19 after one station.
 - Browser check plays all 13 activities to the end with real taps; rescue-breath taps follow the step's cadence.
+
+## Milestone 6 checks (added October 2026)
+
+- `sound` section: with sound on, a station run has the metronome ticking during compressions and off afterwards, a bad cue and buzz on a long pulse check, good cues and a closing chime; the Guided bag-mask breathe cue sounds once when the window opens, not before, and again for the next breath; quiz right/wrong tones; with sound off, no metronome and no tones. Removing the penalty cue in a scratch copy fails the station check. The haptics check now expects one preview buzz when the switch is turned on.
