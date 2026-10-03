@@ -75,3 +75,10 @@ Foundation fixes: fonts served from this site, screen wake lock, finger-sized bu
 - Settings saved under `preconnect-settings` and applied to `<html>`.
 - The debrief uses the report-style `.pc-table`.
 - `browser_check.py` also opens the Settings sheet at both widths.
+
+## Milestone 3 checks (added October 2026)
+
+- Shared core: `preconnect-core.js` is loaded before the app script, listed in the service worker's cache, and its header hash matches its body (edit it, re-stamp with the hub's `node tests/core_hash.js`, copy to every repo).
+- Spacing: 1, 3, 7, 14, 30 days after each clear at 70+; a miss resets; overdue reads as due.
+- Debrief body: compare line (best, last time, new best), metrics table, what cost points, lesson chips, steps table.
+- Home chips turn to Due / Again from the spacing schedule and the readiness line counts them; the debrief uses the shared body.

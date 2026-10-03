@@ -12,6 +12,18 @@ const IDS=['tempo','adult','infant','bvm','chokeA','chokeI','team','opioid','bab
 if(want.includes('syntax')){try{new vm.Script(html.split('<script>')[1].split('</script>')[0]);report('syntax','index.html script compiles',true);}catch(e){report('syntax','index.html script compiles',false,e.message);}
   {const ver=(html.match(/APP_VERSION='([^']+)'/)||[])[1],sw=fs.readFileSync(path.join(__dirname,'..','sw.js'),'utf8'),cache=(sw.match(/CACHE = '([^']+)'/)||[])[1];
    report('syntax','service-worker cache matches app version',cache===`bls-ready-v${ver}`,`app ${ver}, cache ${cache}`);
+  {// Milestone 3: the shared core is loaded before the app, listed in the offline cache, and its header hash matches its body (edit without re-hashing = fail)
+   const cp=path.join(__dirname,'..','preconnect-core.js');const ct=fs.existsSync(cp)?fs.readFileSync(cp,'utf8'):'';const first=ct.split('\n')[0]||'';const body=ct.slice(first.length+1);
+   const want=(first.match(/sha256:([0-9a-f]{64})/)||[])[1];const got=require('crypto').createHash('sha256').update(body,'utf8').digest('hex');const sw4=fs.readFileSync(path.join(__dirname,'..','sw.js'),'utf8');
+   const tagOK=html.indexOf('<script src="preconnect-core.js"></script>')>-1&&html.indexOf('<script src="preconnect-core.js"></script>')<html.indexOf('\n<script>\n');
+   report('syntax','shared core loaded first, cached offline, header hash matches body',!!ct&&want===got&&sw4.includes("'preconnect-core.js'")&&tagOK,want===got?'hash ok':`hash expected ${got.slice(0,12)}`);}
+  {// Milestone 3: due-again spacing and the debrief body are pure functions; prove them here
+   const {boot}=require('./bls_mock.js');const {api}=boot();const d=n=>new Date(Date.now()-n*864e5).toISOString();
+   const never=api.pcSpacing([]).status==='never',one=api.pcSpacing([{d:d(0),score:90}]),two=api.pcSpacing([{d:d(5),score:90},{d:d(4),score:90}]),miss=api.pcSpacing([{d:d(5),score:90},{d:d(1),score:40}]),due=api.pcSpacing([{d:d(10),score:95}]);
+   report('syntax','spacing: 1, 3, 7, 14, 30 days after each clear at 70+; a miss resets; overdue reads as due',never&&one.level===1&&one.dueIn===1&&one.status==='ok'&&two.level===2&&two.status==='due'&&miss.status==='missed'&&due.status==='due'&&due.level===1,`one ${one.status}/${one.dueIn}d, two ${two.status}, miss ${miss.status}, due ${due.status}`);
+   const bp=api.pcBestPrev([{d:d(3),score:80},{d:d(1),score:60}]);const h=api.pcDebriefBody({score:90,compare:bp,metrics:[['Rate','110 / min']],feedback:['Late breath'],lessons:[{k:'x',name:'Breaths'}],steps:[{name:'Check pulse',ok:true,at:'0:05'},{name:'Shock',ok:false,missed:true}]});
+   report('syntax','debrief body: compare line, metrics table, what cost points, lessons, steps table',bp.best===80&&bp.prev===60&&/Best 80 · last time 60 · new best/.test(h)&&/pc-metrics/.test(h)&&/What cost points/.test(h)&&/data-k="x"/.test(h)&&/pc-steps/.test(h)&&/✗/.test(h));}
+
   {// Milestone 1: fonts are served from this site; nothing loads from Google (offline fidelity + privacy). Every font file exists and is in the offline cache list.
    const sw3=fs.readFileSync(path.join(__dirname,'..','sw.js'),'utf8');const urls=[...html.matchAll(/url\((fonts\/[^)]+)\)/g)].map(m=>m[1]);
    const ok=!/fonts\.googleapis|gstatic\.com/.test(html)&&urls.length>=5&&urls.every(u=>fs.existsSync(path.join(__dirname,'..',u))&&sw3.includes(`'${u}'`));
@@ -81,7 +93,9 @@ if(want.includes('record')){// Milestone 2: home readiness, best-score chips, co
   const el={textContent:''};api.countUp(el,87);report('record','score count-up lands on the exact score when motion is unavailable',el.textContent==='87');
   let v=0;navigator.vibrate=()=>{v++;return true;};api.setSetting('haptics','off');api.haptic(8);const a=v;api.setSetting('haptics','on');api.haptic(8);report('record','haptics follow the shared setting (off means no vibration)',a===0&&v===1,`off ${a}, on ${v}`);delete navigator.vibrate;
   api.setSetting('text','large');report('record','settings saved under preconnect-settings and applied to the page',JSON.parse(store['preconnect-settings']).text==='large'&&global.document.documentElement.dataset.text==='large');
-  global.__T=1000;api.runStart('tempo');api.runFinish();report('record','debrief uses the report-style table',/<table class="pc-table">/.test(els['done-b'].innerHTML)&&els['done-s'].textContent!=='',els['done-s'].textContent);}
+  {const d=n=>new Date(Date.now()-n*864e5).toISOString();const b2=boot({'bls-ready':JSON.stringify({runs:[{kind:'station',id:'adult',score:95,d:d(10),tier:0},{kind:'station',id:'bvm',score:40,d:d(1),tier:0}]})});b2.api.showHome();
+   report('record','home chips turn to Due / Again from the spacing schedule, and the readiness line counts them',b2.els['chip-adult'].textContent==='Due'&&b2.els['chip-bvm'].textContent==='Again'&&/2 due for review/.test(b2.els['rdy-s'].textContent),`${b2.els['chip-adult'].textContent}, ${b2.els['chip-bvm'].textContent}`);}
+  {const b4=boot();global.__T=1000;b4.api.runStart('tempo');b4.api.runFinish();report('record','debrief uses the shared Debrief 2.0 body (compare line, clean-run line, score)',/pc-compare/.test(b4.els['done-b'].innerHTML)&&/Clean run/.test(b4.els['done-b'].innerHTML)&&b4.els['done-s'].textContent==='100',b4.els['done-s'].textContent);}}
 if(want.includes('fuzz')){let crashes=0;const errs=[];const R=['next','opt','seq','timer','tap','breath','rhythm','alt','quit'];
   for(let run=0;run<60;run++){global.__T=1000;const {api}=boot();api.runStart(IDS[run%IDS.length]);
     try{for(let i=0;i<800&&api.RUN();i++){global.__T+=Math.random()*3;const a=R[Math.floor(Math.random()*(R.length-(i<700?1:0)))],s=api.RUN().steps[api.RUN().i];
