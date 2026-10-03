@@ -117,3 +117,9 @@ Foundation fixes: fonts served from this site, screen wake lock, finger-sized bu
 ## Milestone 10 checks (added October 2026)
 
 - Browser check: landscape, Daylight and landscape-settings rows.
+
+## Instructor mode checks (added October 3, 2026)
+
+- `drill`: an adult run on Guided with sound on (a fake AudioContext is armed after boot): the Instructor button is hidden until the switch is on and a run is live; opening the sheet sets `frozenAt` and stops the metronome; a tap 40 s into the freeze is ignored; the pads inject queues exactly one `inj` choice step and a second inject is rendered disabled; after closing, `t0` and the last tap moved by exactly 40 s, the metronome is back, and 20 more compressions at 110/min still score one clean set; Freeze holds until the floating button is tapped; the saved run has `inst:1` and the debrief names the inject.
+- Browser check: an `instructor` row at 320 and 390 px (store `{inst:true}`, start Adult CPR, tap the Instructor button).
+- Lesson from this row: BLS Ready runs inside the `#runov` overlay (z-index 12), so the floating Instructor button must sit above it (`.fab{z-index:21}`, under `#instov` at 22). At the Charge the Line value of 9 the button rendered but every tap landed on the overlay; the browser check caught it because it taps the button for real.

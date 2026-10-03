@@ -52,6 +52,7 @@ with sync_playwright() as p:
                 pg.wait_for_timeout(800)   # the score counts up for about 0.6 s; a person reads it once it settles
                 score = pg.text_content('#done-s') if ok else '—'
                 rows.append((w, rid + ' (full)', 0 if ok and score == '100' else 99))
+        pg.evaluate("localStorage.setItem('bls-ready',JSON.stringify({inst:true,runs:[]}))"); pg.goto(URL); pg.wait_for_timeout(200); pg.click('[data-run="tempo"]'); pg.wait_for_timeout(300); pg.click('#inst-fab'); pg.wait_for_timeout(200); rows.append((w, 'instructor', (pg.evaluate(OVER)+1000*pg.evaluate(SMALL)))); pg.click('#inst-close'); pg.evaluate("localStorage.removeItem('bls-ready')")
         pg.goto(URL+'?drill=special'); pg.wait_for_timeout(300); rows.append((w, 'daily link', (pg.evaluate(OVER)+1000*pg.evaluate(SMALL)) + (0 if pg.is_visible('#quizov') else 99)))
         pg.goto(URL); pg.wait_for_timeout(150); pg.click('#h-exam'); pg.wait_for_timeout(150); rows.append((w, 'exam', (pg.evaluate(OVER)+1000*pg.evaluate(SMALL))))
         pg.close()
