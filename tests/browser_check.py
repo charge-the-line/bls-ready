@@ -16,6 +16,7 @@ with sync_playwright() as p:
         pg.goto(URL); pg.wait_for_timeout(300); rows.append((w, 'home', (pg.evaluate(OVER)+1000*pg.evaluate(SMALL))))
         pg.click('#h-learn'); pg.wait_for_timeout(150); rows.append((w, 'lesson', (pg.evaluate(OVER)+1000*pg.evaluate(SMALL)))); pg.click('[data-l="quit"]')
         pg.click('#h-set'); pg.wait_for_timeout(150); rows.append((w, 'settings', (pg.evaluate(OVER)+1000*pg.evaluate(SMALL)))); pg.click('#set-close')
+        pg.evaluate("localStorage.setItem('preconnect-drill',JSON.stringify({on:true,inst:'Max',roster:['Jo','Sam'],who:'',start:new Date().toISOString()}))"); pg.goto(URL); pg.wait_for_timeout(300); rows.append((w, 'drill picker', (pg.evaluate(OVER)+1000*pg.evaluate(SMALL)))); pg.click('.pc-drill-name'); pg.wait_for_timeout(200); rows.append((w, 'drill bar', (pg.evaluate(OVER)+1000*pg.evaluate(SMALL)))); pg.evaluate("localStorage.removeItem('preconnect-drill')")
         for rid in ('tempo','adult','infant','bvm','chokeA','chokeI','team','opioid','baby','child'):
             pg.goto(URL); pg.wait_for_timeout(150); pg.click(f'[data-run="{rid}"]'); pg.wait_for_timeout(150)
             for _ in range(6):   # tap through the first few steps with real clicks

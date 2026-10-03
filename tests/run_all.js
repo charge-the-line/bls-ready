@@ -3,7 +3,7 @@
    Sections: syntax content balance lesson clean mistakes jitter quiz record fuzz   (or: quick) */
 global.window=global.window||{};
 const path=require('path'),fs=require('fs'),vm=require('vm');
-const ALL=['syntax','content','balance','lesson','clean','mistakes','jitter','quiz','record','smooth','fuzz'];
+const ALL=['syntax','content','balance','lesson','clean','mistakes','jitter','quiz','record','drill','smooth','fuzz'];
 let want=process.argv.slice(2);if(!want.length)want=ALL;if(want.includes('quick'))want=['syntax','content','balance','lesson','quiz','record'];
 let failed=0,n=0;const T0=Date.now();
 function report(sec,name,ok,detail=''){n++;if(!ok)failed++;console.log(`${ok?'PASS':'FAIL'}  ${sec.padEnd(9)} ${name}${detail?'  — '+detail:''}`);}
@@ -58,6 +58,9 @@ if(want.includes('quiz')){const {api,els}=boot();for(const mode of ['right','wro
   let bad=0;api.EXAM.forEach(q=>{if(new Set([q.a,...q.d]).size!==3)bad++;});for(const k in api.DRILLS)api.DRILLS[k].bank().forEach(q=>{if(new Set([q.a,...q.d]).size!==3)bad++;});report('quiz','every question has 3 distinct options',bad===0);}
 if(want.includes('record')){global.__T=1000;const {api,els}=boot();api.lessonStart();while(api.LS()){const s=api.LESSON[api.LS().i];api.lessonAct({l:'ans',k:String(s.o.findIndex(x=>x[1]==='good'))});api.lessonAct({l:'next'});}
   report('record','results saved',api.load().runs.some(r=>r.kind==='lesson'));els['h-prog'].onclick();els['p-name'].value='Test Student';els['p-csv'].onclick();report('record','CSV export works',/"Name","Organization","Type"/.test(global.__csv||'')&&/Test Student/.test(global.__csv||''));}
+if(want.includes('drill')){global.__T=1000;const start=new Date().toISOString();const {api,els}=boot({'preconnect-drill':JSON.stringify({on:true,inst:'Max',roster:['Jo'],who:'Jo',start})});api.lessonStart();while(api.LS()){const s=api.LESSON[api.LS().i];api.lessonAct({l:'ans',k:String(s.o.findIndex(x=>x[1]==='good'))});api.lessonAct({l:'next'});}const runs=api.load().runs;const r=runs[runs.length-1];
+  report('drill','Drill Night: bar shows who is up and the saved lesson names them with the instructor and the night',/Up: Jo/.test(els['pc-drill'].innerHTML)&&(r.who||[])[0]==='Jo'&&r.inst==='Max'&&r.night===start,`who ${r.who}, inst ${r.inst}`);}
+
 if(want.includes('smooth')){
   const spy=el=>{let n=0,v='';Object.defineProperty(el,'innerHTML',{get:()=>v,set:x=>{v=x;n++;},configurable:true});return ()=>n;};
   const start=(id,tier=0)=>{global.__T=1000;const B=boot();B.api.setTier(tier);B.api.runStart(id);return B;};

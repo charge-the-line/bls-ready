@@ -91,3 +91,8 @@ Foundation fixes: fonts served from this site, screen wake lock, finger-sized bu
 
 - The existing `lesson` and `quiz` sections now exercise the shared core engines through this module's wrappers; nothing was relaxed.
 - The jitter check's floor is 85 per run (average still 97+): with random ±20% tap timing, one run in roughly sixty legitimately earns two or three "aim for steadier" notes, and that feedback is correct, not a bug.
+
+## Milestone 7 checks (added October 2026)
+
+- `drill` section: with a session on, the bar reads "Up: Jo" and the saved lesson is stamped with who, instructor and night. Removing `pcDrillStamp` from `record()` in a scratch copy fails this check.
+- Browser check: with a session in storage the picker opens on load and the bar shows after a pick.
