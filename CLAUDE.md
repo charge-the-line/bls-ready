@@ -145,7 +145,7 @@ Max's likely picks after 1: 2, then 3, then either Charge the Line catch-up or D
 
 # This repo: BLS Ready (`bls-ready` → `/bls-ready/`)
 
-**Current version: 0.14.0.** Modeled on the **AHA BLS Provider course, 2025 guidelines.** Max takes the AHA BLS Instructor course on November 7, 2026, with the 2025 materials. Content is in our own words. Never copy AHA videos, manuals, exam questions, or skills-test checklists.
+**Current version: 0.14.1.** Modeled on the **AHA BLS Provider course, 2025 guidelines.** Max takes the AHA BLS Instructor course on November 7, 2026, with the 2025 materials. Content is in our own words. Never copy AHA videos, manuals, exam questions, or skills-test checklists. The home list carries a "What this is" card under the readiness card (0.14.1), the same header every module carries.
 
 ## 2025 guideline points that must never regress (`content` tests enforce them)
 - **Infant compressions:** the two-finger technique is no longer recommended. Two-thumb encircling hands, or the heel of one hand.
