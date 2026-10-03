@@ -12,6 +12,7 @@ const IDS=['tempo','adult','infant','bvm','chokeA','chokeI','team','opioid','bab
 if(want.includes('syntax')){try{new vm.Script(html.split('<script>')[1].split('</script>')[0]);report('syntax','index.html script compiles',true);}catch(e){report('syntax','index.html script compiles',false,e.message);}
   {const ver=(html.match(/APP_VERSION='([^']+)'/)||[])[1],sw=fs.readFileSync(path.join(__dirname,'..','sw.js'),'utf8'),cache=(sw.match(/CACHE = '([^']+)'/)||[])[1];
    report('syntax','service-worker cache matches app version',cache===`bls-ready-v${ver}`,`app ${ver}, cache ${cache}`);
+  report('syntax','offline helper only clears its own old caches',/k\.startsWith\('bls-ready-v'\)/.test(fs.readFileSync(path.join(__dirname,'..','sw.js'),'utf8')));
    const man=JSON.parse(fs.readFileSync(path.join(__dirname,'..','manifest.json'),'utf8'));report('syntax','install manifest, icons, and offline helper wired up',/rel="manifest"/.test(html)&&/serviceWorker\.register\('sw\.js'\)/.test(html)&&man.icons.length>=2&&fs.existsSync(path.join(__dirname,'..','icon-512.png')));}
   report('syntax','trademark notice and "not affiliated" statement present',/trademarks of the American Heart Association/.test(html)&&/not affiliated/.test(html));
   report('syntax','app name does not use AHA trademarks',!/<title>[^<]*(Heartsaver|BLS Provider|American Heart)/i.test(html)&&!/class="brand">[^<]*(HEARTSAVER|AHA)/.test(html));}
