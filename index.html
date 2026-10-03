@@ -30,6 +30,7 @@
 </script>
 
 <title>BLS Ready</title>
+<script src="preconnect-core.js"></script>
 <style>
 /* Fonts are served from this site (fonts/, SIL Open Font License). Nothing loads from Google: works offline and makes no outside request. */
 @font-face{font-family:"Atkinson Hyperlegible";font-style:normal;font-weight:400;font-display:swap;src:url(fonts/atkinson-hyperlegible-latin-400-normal.woff2) format("woff2")}
@@ -55,25 +56,6 @@ button:focus-visible{outline:2px solid var(--red2);outline-offset:2px}
 .hold{background:#1d4f8f!important;border-color:var(--red2)!important;color:#fff;box-shadow:0 0 0 3px rgba(229,56,59,.35) inset}
 @keyframes pulse{50%{box-shadow:0 0 0 4px rgba(229,56,59,.35)}}
 .hidden{display:none!important}
-/* Preconnect look v2, "Station" (Milestone 2). Tokens first; every module keeps its own accent (--acc). */
-html[data-contrast="high"]{--bg:#000;--deck:#0e1013;--deck2:#181b20;--line:#4b535e;--ink:#fff;--soft:#d6dce3}
-html[data-text="large"] body{zoom:1.12}
-.sec{font-family:"Saira Condensed",sans-serif;font-weight:600;font-size:14px;letter-spacing:2.5px;text-transform:uppercase;color:var(--soft);margin:22px 0 8px;display:flex;align-items:center;gap:10px}.sec:after{content:"";flex:1;height:1px;background:var(--line)}
-.chip{display:inline-block;font-family:"Saira Condensed",sans-serif;font-weight:600;font-size:14px;letter-spacing:.5px;padding:2px 8px;border-radius:4px;background:var(--acc);color:var(--acc-ink);white-space:nowrap;line-height:1.5}.chip.dim{background:var(--deck2);color:var(--soft)}.chip.due{background:var(--amber);color:#0a0c0f}
-.num{font-family:"Saira Condensed",sans-serif;font-weight:700;font-size:34px;line-height:1;color:var(--acc)}
-.small{font-size:13px;color:var(--soft)}.flex{display:flex;align-items:center;gap:12px}.sp{flex:1}
-.seg{display:flex;gap:3px;margin-top:8px}.seg i{flex:1;height:8px;background:var(--line);border-radius:1px}.seg i.on{background:var(--acc);transform-origin:left;animation:fill .5s ease-out both}
-@keyframes fill{from{transform:scaleX(0)}to{transform:scaleX(1)}}
-@keyframes slidein{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}.in{animation:slidein .25s ease-out both}
-/* Report-style tables (direction B) for debriefs and the training record */
-.pc-table{width:100%;border-collapse:collapse;font-size:15px}.pc-table td{padding:8px 0;border-top:1px solid var(--line);vertical-align:top}.pc-table tr:first-child td{border-top:0}.pc-table td.l{color:var(--soft)}.pc-table td:last-child{text-align:right;font-family:"Saira Condensed",sans-serif;font-size:18px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap;padding-left:10px}
-/* Settings sheet */
-.set{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid var(--line)}.set:first-of-type{border-top:0}.set .k{font-size:16px}.set .k small{display:block;font-size:13px;color:var(--soft);line-height:1.35}
-.seg2{display:inline-flex;border:2px solid var(--line);border-radius:6px;overflow:hidden;flex:none}.seg2 button{border:0;border-radius:0;min-height:46px;padding:8px 12px;font-family:"Saira Condensed",sans-serif;font-weight:600;font-size:15px;text-transform:uppercase;letter-spacing:.5px;background:transparent;color:var(--ink)}.seg2 button.on{background:var(--ink)!important;border-color:var(--ink)!important;color:#0a0c0f!important}
-.gear{min-height:46px;padding:8px 10px;font-family:"Saira Condensed",sans-serif;font-weight:600;font-size:15px;letter-spacing:.5px;text-transform:uppercase;background:transparent;border:2px solid var(--line);color:var(--ink);border-radius:6px}
-/* Motion means something; none of it is decoration. Reduce Motion on the phone, or Motion = Off in Settings, stops all of it. */
-@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
-html[data-motion="off"] *{animation:none!important;transition:none!important}
 .brand{font-family:"Saira Condensed",sans-serif;font-weight:700;font-size:15px;letter-spacing:1.5px;color:var(--red2)}
 .top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px}
 .top h1{margin:0;font-size:24px;font-weight:600;line-height:1.05}
@@ -164,10 +146,9 @@ body.tv{max-width:1100px}.brand{color:var(--red2)}@media (min-width:1000px){body
  <p class="stat" style="margin-top:10px">Settings apply to every Preconnect module on this phone.</p>
 </div></div>
 <div class="overlay hidden" id="infoov" style="z-index:15"><div class="box"><div id="info-b"></div><button class="go" id="info-close" style="width:100%;margin-top:10px">Close</button></div></div>
-<script src="preconnect-core.js"></script>
 <script>
 /* =================== core =================== */
-const APP_VERSION='0.7.0';
+const APP_VERSION='0.7.1';
 /* Screen wake lock (Milestone 1): keeps the phone from dimming or locking during a timed skill.
    On only while an activity runs: keepAwake(true) when it starts, keepAwake(false) back at the menu or on the result screen. */
 const WAKE={s:null,want:false};

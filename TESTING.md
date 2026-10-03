@@ -82,3 +82,7 @@ Foundation fixes: fonts served from this site, screen wake lock, finger-sized bu
 - Spacing: 1, 3, 7, 14, 30 days after each clear at 70+; a miss resets; overdue reads as due.
 - Debrief body: compare line (best, last time, new best), metrics table, what cost points, lesson chips, steps table.
 - Home chips turn to Due / Again from the spacing schedule and the readiness line counts them; the debrief uses the shared body.
+
+## Milestone 4 checks (added October 2026)
+
+- No new checks; the look CSS moved to the core and `.chip.due` with it.
