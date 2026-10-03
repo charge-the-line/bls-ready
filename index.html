@@ -9,6 +9,26 @@
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-title" content="BLS Ready">
+<script data-pca>window.PCA_MOD="bls";
+/* Preconnect anonymous statistics (GoatCounter). Sends only activity paths — never names, organizations, or typed text.
+   Turn off per device on the Privacy page (localStorage 'preconnect-stats' = 'off'). Not sent from file:// or localhost. */
+(function(){var off=false;try{off=localStorage.getItem('preconnect-stats')==='off';}catch(e){}
+ var P=window.PCA={mod:window.PCA_MOD||'app',off:off,q:[],seen:{},cur:null,
+  clean:function(p){return String(p).toLowerCase().replace(/[^a-z0-9\/\-]+/g,'-').replace(/-+/g,'-').replace(/^-|-$/g,'').slice(0,120);},
+  ev:function(path){if(this.off)return;var p=this.clean(path);if(this.q.length<60)this.q.push({path:p,title:p,event:true});this.flush();},
+  flush:function(){var g=window.goatcounter,s=this;if(!g||typeof g.count!=='function'){if(!s.t)s.t=setTimeout(function(){s.t=null;s.flush();},1500);return;}while(s.q.length){try{g.count(s.q.shift());}catch(e){}}},
+  bkt:function(n){n=+n;return n>=90?'score-90-100':n>=80?'score-80s':n>=70?'score-70s':n>=60?'score-60s':'score-under-60';},
+  att:function(n){return 'attempt-'+(n>=5?'5plus':n);},
+  begin:function(mod,act,where){this.abandon();this.cur={mod:mod,act:act,where:where};this.ev(mod+'/start/'+act);},
+  end:function(detail){var c=this.cur;if(!c)return;this.cur=null;this.ev(c.mod+'/finish/'+c.act+(detail?'/'+detail:''));},
+  abandon:function(){var c=this.cur;if(!c)return;this.cur=null;var w='';try{w=c.where?c.where():'';}catch(e){}this.ev(c.mod+'/quit/'+c.act+(w?'/'+w:''));},
+  err:function(mod,msg){var k=mod+'|'+msg;if(this.seen[k])return;this.seen[k]=1;this.ev('error/'+mod+'/'+String(msg).slice(0,60));}};
+ if(!off){var s=document.createElement('script');s.async=true;s.src='https://gc.zgo.at/count.js';s.setAttribute('data-goatcounter','https://preconnect.goatcounter.com/count');(document.head||document.documentElement).appendChild(s);}
+ window.addEventListener('error',function(e){P.err(P.mod||'app',e&&e.message||'error');});
+ window.addEventListener('pagehide',function(){P.abandon();});
+})();
+</script>
+
 <title>BLS Ready</title>
 <link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Saira+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -75,7 +95,7 @@ body.tv{max-width:1100px}@media (min-width:1000px){body.tv{zoom:1.3}}
 </head>
 <body>
 <div id="home">
-  <a href="../" style="display:inline-block;font-size:13px;font-weight:700;letter-spacing:.5px;color:#ff8a3d;text-decoration:none;margin:0 0 6px">◂ PRECONNECT</a>
+  <div style="display:flex;justify-content:space-between;align-items:center;margin:0 0 6px"><a href="../" style="display:inline-block;font-size:13px;font-weight:700;letter-spacing:.5px;color:#ff8a3d;text-decoration:none;margin:0">◂ PRECONNECT</a><a href="../feedback.html?from=bls" style="font-size:13px;font-weight:700;color:#9aa3ad;text-decoration:none">Feedback</a></div>
   <div class="top"><div><div class="brand">BLS READY</div><h1>High-quality CPR, every time.</h1></div></div>
   <p class="sub" style="font-size:15px">Practice for Basic Life Support: learn it, drill the skills on a real clock, run team scenarios, and get ready for the exam. Updated for the 2025 guidelines.</p>
   <div class="sec">1 · LEARN</div>
@@ -107,12 +127,13 @@ body.tv{max-width:1100px}@media (min-width:1000px){body.tv{zoom:1.3}}
 <div class="overlay hidden" id="infoov" style="z-index:15"><div class="box"><div id="info-b"></div><button class="go" id="info-close" style="width:100%;margin-top:10px">Close</button></div></div>
 <script>
 /* =================== core =================== */
-const APP_VERSION='0.3.0';
+const APP_VERSION='0.4.0';
 const $=id=>document.getElementById(id);
 const esc=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 const pick=a=>a[Math.floor(Math.random()*a.length)];
 const shuf=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
 let TIER=0,NOW=()=>performance.now()/1000;
+const pca=(f,...a)=>{try{const P=typeof window!=='undefined'&&window.PCA;if(P&&P[f])return P[f](...a);}catch(e){}};
 const KEY='bls-ready';
 function load(){try{return JSON.parse(localStorage.getItem(KEY))||{runs:[]};}catch(e){return {runs:[]};}}
 function save(p){try{localStorage.setItem(KEY,JSON.stringify(p));}catch(e){}}
@@ -155,7 +176,7 @@ const LESSON=[
  {t:'Choking — 2025 change',pts:['Adult or child who can\'t cough, speak, or breathe: 5 back blows, then 5 abdominal thrusts. Repeat.','Infant: 5 back blows, then 5 chest thrusts. Repeat. Never abdominal thrusts on an infant.','If they become unresponsive: call for help and start CPR. Look in the mouth before breaths — remove an object only if you can see it. No blind finger sweeps.'],
   q:'An adult is choking and can\'t speak. What\'s the 2025 sequence?',o:[['5 back blows, then 5 abdominal thrusts','good'],['Abdominal thrusts only, until it comes out','bad'],['5 chest thrusts, then a finger sweep','bad']],why:'2025 added back blows first for adults and children, alternating with abdominal thrusts.'}];
 let LS=null;
-function lessonStart(){LS={i:0,first:{},answered:false};$('lessonov').classList.remove('hidden');lessonRender();}
+function lessonStart(){pca('begin','bls','lesson',()=>LS?`slide-${LS.i+1}`:'');LS={i:0,first:{},answered:false};$('lessonov').classList.remove('hidden');lessonRender();}
 function lessonRender(){const s=LESSON[LS.i];LS.answered=false;LS.ord=shuf(s.o.map((o,k)=>k));
   $('lesson-box').innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><span class="tag">Lesson · ${LS.i+1} of ${LESSON.length}</span><button data-l="tv" style="padding:6px 10px;font-size:13px">${document.body.classList.contains('tv')?'Phone view':'Big-screen view'}</button></div>
    <h2>${esc(s.t)}</h2><ul>${s.pts.map(x=>`<li>${x.startsWith('2025')?'<b style="color:#ffc23d">2025:</b> '+esc(x.slice(5).replace(/^: /,'')):esc(x)}</li>`).join('')}</ul>
@@ -168,8 +189,8 @@ function lessonAct(ds){const a=ds.l;if(a==='ans'){if(LS.answered)return;const s=
     if(ok){LS.answered=true;$('l-next').disabled=false;}$('l-fb').innerHTML=`<b style="color:${ok?'#7fe3a4':o[1]==='partial'?'#ffc23d':'#ff9a96'}">${ok?'Right.':o[1]==='partial'?'Not quite.':'No.'}</b> ${esc(ok?s.why:'Try again.')}`;}
   else if(a==='next'){if(!LS.answered)return;if(LS.i+1<LESSON.length){LS.i++;lessonRender();}else lessonDone();}
   else if(a==='prev'){if(LS.i){LS.i--;lessonRender();}}else if(a==='tv'){document.body.classList.toggle('tv');lessonRender();}
-  else if(a==='quit'){$('lessonov').classList.add('hidden');LS=null;}}
-function lessonDone(){const right=Object.values(LS.first).filter(Boolean).length,score=Math.round(right/LESSON.length*100);$('lessonov').classList.add('hidden');record('lesson','lesson',score);
+  else if(a==='quit'){pca('abandon');$('lessonov').classList.add('hidden');LS=null;}}
+function lessonDone(){const right=Object.values(LS.first).filter(Boolean).length,score=Math.round(right/LESSON.length*100);pca('end',pca('bkt',score));$('lessonov').classList.add('hidden');record('lesson','lesson',score);
   showDone('Lesson complete',score,`<p>${right} of ${LESSON.length} checks right on the first try.</p><p style="font-size:14px;color:var(--soft)">Next: practice the skills on a real clock.</p>`,()=>lessonStart());LS=null;}
 $('lesson-box').onclick=e=>{const b=e.target.closest&&e.target.closest('[data-l]');if(b)lessonAct(b.dataset);};
 $('h-learn').onclick=()=>lessonStart();
@@ -261,7 +282,7 @@ const DEFS={
   B(),C(30),
   {k:'info',p:'You see the candy in her mouth after the next round and flick it out. EMS arrives moments later.'},
   {k:'choice',p:'What do you tell EMS?',o:[['Choking, went unresponsive, CPR times, object removed','good'],['That she ate too much candy at the party','bad'],['That she\'s fine now — the candy is out','partial']],why:'What happened, what you did, and when. She still needs to be evaluated.'}]}};
-function runStart(id){const def=DEFS[id];RUN={id,def,steps:def.steps(),i:0,score:100,errs:[],log:[],msg:null,t0:NOW(),sets:0,m:{rates:[],inRange:[],pauses:[],longest:0,firstComp:null,recogEnd:null,toComp:null,pulse:[],fastBreaths:0,compEnd:null,aed:false},st:{}};$('runov').classList.remove('hidden');stepBegin();}
+function runStart(id){const def=DEFS[id];pca('begin','bls',id,()=>RUN&&RUN.steps[RUN.i]?`step-${RUN.i+1}-${RUN.steps[RUN.i].k}`:'');RUN={id,def,steps:def.steps(),i:0,score:100,errs:[],log:[],msg:null,t0:NOW(),sets:0,m:{rates:[],inRange:[],pauses:[],longest:0,firstComp:null,recogEnd:null,toComp:null,pulse:[],fastBreaths:0,compEnd:null,aed:false},st:{}};$('runov').classList.remove('hidden');stepBegin();}
 function say(html,cls){RUN.msg={html,cls};}
 function penal(p,msg){RUN.score=Math.max(0,RUN.score-p);RUN.errs.push(msg);RUN.stepErr=(RUN.stepErr||0)+1;say(esc(msg),'bad');}
 function stepBegin(){const s=RUN.steps[RUN.i];RUN.st={};RUN.stepErr=0;if(!s){return runFinish();}
@@ -308,7 +329,7 @@ function runUpd(){if(!RUN)return;const s=RUN.steps[RUN.i],st=RUN.st;if(!s)return
   if(s.k==='alt'){set('kv-a',st.cyc+1);set('kv-b',`${Math.min(5,st.inCyc)}/5`);set('kv-c',`${st.inCyc>5?st.inCyc-5:0}/5`);if(TIER===0){coach=st.inCyc<5?`Next: ${s.a.toLowerCase()}`:`Next: ${s.b.toLowerCase()}`;}}
   const ce=$('run-coach');if(ce){set('run-coach',coach);ce.style.color=col;}}
 function runAct(ds){if(!RUN)return;const s=RUN.steps[RUN.i],st=RUN.st,a=ds.r,t=NOW(),m=RUN.m;
-  if(a==='quit'){$('runov').classList.add('hidden');RUN=null;return;}
+  if(a==='quit'){pca('abandon');$('runov').classList.add('hidden');RUN=null;return;}
   if(t<RUN.guard&&a!=='over')return;     // ignore momentum taps for half a second after a step changes
   if(a==='next'){stepNext();return;}
   if(s.k==='choice'&&a==='opt'){const o=s.o[+ds.i];if(st.tried[+ds.i])return;if(o[1]==='good'){st.solved=true;say(`<b>Right.</b> ${esc(s.why)}`,'good');}else{st.tried[+ds.i]=1;penal(o[1]==='partial'?5:10,o[1]==='partial'?'Not the best choice — try again.':'No — try again.');if(TIER===0)RUN.msg.html+=` <span style="color:var(--soft)">${esc(s.why)}</span>`;}runBuild();return;}
@@ -333,7 +354,7 @@ function runAct(ds){if(!RUN)return;const s=RUN.steps[RUN.i],st=RUN.st,a=ds.r,t=N
 function runTick(){if(RUN)runUpd();}
 function runFinish(){const m=RUN.m,def=RUN.def,id=RUN.id;const avg=m.rates.length?Math.round(m.rates.reduce((a,b)=>a+b,0)/m.rates.length):null,inR=m.inRange.length?Math.round(m.inRange.reduce((a,b)=>a+b,0)/m.inRange.length*100):null;
   const rows=[...(avg!==null?[['Average compression rate',avg+' / min (100–120)'],['Compressions in the zone',inR+'%']]:[]),...(m.pauses.length?[['Longest hands-off pause',m.longest.toFixed(1)+' s (under 10)']]:[]),...(m.toComp!==null?[['Recognition to first compression',m.toComp.toFixed(1)+' s (within 10)']]:[]),...(m.pulse.length?[['Pulse checks',m.pulse.map(x=>x.toFixed(0)+' s').join(', ')+' (5–10)']]:[])];
-  const score=RUN.score,errs=RUN.errs.slice(),log=RUN.log.slice();record(def.scen?'scenario':'station',id,score);$('runov').classList.add('hidden');RUN=null;
+  const score=RUN.score,errs=RUN.errs.slice(),log=RUN.log.slice();pca('end',`${['guided','recall'][TIER]}/${pca('att',(load().runs||[]).filter(r=>r.id===id&&r.kind!=='lesson').length+1)}/${pca('bkt',RUN.score)}`);record(def.scen?'scenario':'station',id,score);$('runov').classList.add('hidden');RUN=null;
   const mm=x=>Math.floor(x/60)+':'+String(Math.floor(x%60)).padStart(2,'0');
   const steps=`<div class="sec" style="margin-top:12px">YOUR STEPS</div>${log.map(l=>`<div class="mrow"><span>${l.ok?'<b style="color:#7fe3a4">✓</b>':'<b style="color:#ffc23d">⚠</b>'} ${esc(l.name)}${l.detail?` <span style="color:var(--soft)">· ${esc(l.detail)}</span>`:''}</span><b style="white-space:nowrap">${mm(l.at)}</b></div>`).join('')}`;
   showDone(def.name,score,`${rows.length?`<div>${rows.map(([a,b])=>`<div class="mrow"><span>${a}</span><b style="text-align:right">${esc(b)}</b></div>`).join('')}</div>`:''}${errs.length?`<p style="font-size:14px;margin-top:8px"><b>Feedback:</b> ${errs.map(esc).join(' · ')}</p>`:'<p style="font-size:14px;color:var(--soft);margin-top:8px">Clean run.</p>'}${steps}`,()=>runStart(id));}
@@ -372,14 +393,14 @@ const DRILLS={
  ages:{name:'Adult vs. child vs. infant',bank:()=>EXAM.filter((_,i)=>[2,4,6,11,12,15,18,20].includes(i))},
  choke:{name:'Choking by age',bank:()=>[['Adult can\'t speak or cough. First?','5 back blows',['5 chest thrusts','A blind finger sweep'],'2025: back blows first for adults and children.'],['Infant can\'t cry or cough. After 5 back blows?','5 chest thrusts',['5 abdominal thrusts','A blind finger sweep'],'Infants: chest thrusts, never abdominal thrusts.'],['Child can\'t speak. After 5 back blows?','5 abdominal thrusts',['5 chest thrusts','Wait for coughing'],'Children: alternate back blows and abdominal thrusts.'],['Adult is coughing forcefully. What do you do?','Encourage coughing, stay close',['Start back blows now','Start abdominal thrusts'],'A forceful cough is moving air. Watch closely and be ready.'],['Victim goes unresponsive. Before breaths?','Look in the mouth',['Do a finger sweep','Give abdominal thrusts'],'Look; remove only what you can see.']].map(([q,a,d,why])=>({q,a,d,why}))}};
 let QZ=null;
-function quizStart(name,bank,n,kind,id){const qs=shuf(bank).slice(0,n).map(x=>Object.assign({},x,{ord:shuf([x.a,...x.d])}));QZ={name,qs,i:0,right:0,kind,id};$('quizov').classList.remove('hidden');quizQ();}
+function quizStart(name,bank,n,kind,id){pca('begin','bls',kind==='exam'?'exam':'drill-'+id,()=>QZ&&QZ.qs?`question-${QZ.i+1}`:'');const qs=shuf(bank).slice(0,n).map(x=>Object.assign({},x,{ord:shuf([x.a,...x.d])}));QZ={name,qs,i:0,right:0,kind,id};$('quizov').classList.remove('hidden');quizQ();}
 function quizQ(){const q=QZ.qs[QZ.i];$('qz-title').textContent=QZ.name;$('qz-meta').textContent=`${QZ.i+1} of ${QZ.qs.length} · ${QZ.right} right`;
   $('qz-body').innerHTML=`<p style="font-size:18px;margin:0 0 10px">${esc(q.q)}</p>${q.ord.map((o,i)=>`<button class="opt" data-q="ans" data-i="${i}">${esc(o)}</button>`).join('')}<p id="qz-fb" style="font-size:15px"></p>`;$('qz-foot').innerHTML='<button data-q="quit" style="width:100%">Quit</button>';}
-function quizAct(ds){const a=ds.q;if(a==='quit'){$('quizov').classList.add('hidden');QZ=null;return;}
+function quizAct(ds){const a=ds.q;if(a==='quit'){pca('abandon');$('quizov').classList.add('hidden');QZ=null;return;}
   if(a==='menu'){drillMenu();return;}if(a==='again'){const k=QZ.kind,id=QZ.id;k==='exam'?examStart():quizStart(DRILLS[id].name,DRILLS[id].bank(),DRILLS[id].bank().length,'drill',id);return;}
   if(a==='go'){quizStart(DRILLS[ds.k].name,DRILLS[ds.k].bank(),DRILLS[ds.k].bank().length,'drill',ds.k);return;}
   if(a==='ans'){const q=QZ.qs[QZ.i];if(q.done)return;q.done=true;const ok=q.ord[+ds.i]===q.a;if(ok)QZ.right++;$('qz-fb').innerHTML=`<b style="color:${ok?'#7fe3a4':'#ff9a96'}">${ok?'Right.':'Answer: '+esc(q.a)+'.'}</b> ${esc(q.why)}`;$('qz-foot').innerHTML=`<button data-q="next" class="go" style="width:100%">${QZ.i+1<QZ.qs.length?'Next':'Results'}</button>`;}
-  if(a==='next'){QZ.i++;if(QZ.i<QZ.qs.length)quizQ();else{const sc=Math.round(QZ.right/QZ.qs.length*100);record(QZ.kind,QZ.id,sc);$('qz-body').innerHTML=`<div class="big">${sc}</div><p>${QZ.right} of ${QZ.qs.length} right.${QZ.kind==='exam'?(sc>=85?' Solid — keep it sharp.':' Review the lesson and try again — aim for 85% or better.'):''}</p>`;$('qz-foot').innerHTML=`<div class="row"><button data-q="${QZ.kind==='exam'?'quit':'menu'}">${QZ.kind==='exam'?'Done':'All drills'}</button><button data-q="again" class="go">Again</button></div>`;}}}
+  if(a==='next'){QZ.i++;if(QZ.i<QZ.qs.length)quizQ();else{const sc=Math.round(QZ.right/QZ.qs.length*100);pca('end',pca('bkt',sc));record(QZ.kind,QZ.id,sc);$('qz-body').innerHTML=`<div class="big">${sc}</div><p>${QZ.right} of ${QZ.qs.length} right.${QZ.kind==='exam'?(sc>=85?' Solid — keep it sharp.':' Review the lesson and try again — aim for 85% or better.'):''}</p>`;$('qz-foot').innerHTML=`<div class="row"><button data-q="${QZ.kind==='exam'?'quit':'menu'}">${QZ.kind==='exam'?'Done':'All drills'}</button><button data-q="again" class="go">Again</button></div>`;}}}
 function examStart(){quizStart('Exam practice',EXAM,15,'exam','exam');}
 function drillMenu(){QZ={kind:'drill'};$('qz-title').textContent='Quick drills';$('qz-meta').textContent='';$('qz-body').innerHTML=Object.keys(DRILLS).map(k=>`<button class="scen" data-q="go" data-k="${k}"><b>${DRILLS[k].name}</b></button>`).join('')+`<button class="scen" id="dr-tempo"><b>Compression tempo</b><span>Same as the practice station — 30:2, three rounds</span></button>`;$('qz-foot').innerHTML='<button data-q="quit" class="go" style="width:100%">Back</button>';$('quizov').classList.remove('hidden');$('dr-tempo').onclick=()=>{$('quizov').classList.add('hidden');runStart('tempo');};}
 $('qz-body').onclick=e=>{const b=e.target.closest&&e.target.closest('[data-q]');if(b)quizAct(b.dataset);};$('qz-foot').onclick=$('qz-body').onclick;
