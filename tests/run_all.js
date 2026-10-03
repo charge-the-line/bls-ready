@@ -78,6 +78,9 @@ if(want.includes('sound')){const fakeAudio=()=>{const log=[];const AC=function()
    report('sound','quiz: a right answer plays the good tone, a wrong one the bad tone with a buzz',right==='660,990'&&F.fs().includes(220)&&F.buzz.includes('[30,40,30]'));
    const G=boot();F.arm();G.api.setSetting('sound','off');F.log.length=0;G.api.runStart('tempo');report('sound','sound off: no metronome, no tones',G.api.pcMetroState()===null&&F.log.length===0);delete global.window.AudioContext;delete navigator.vibrate;}}
 
+if(want.includes('drill')){global.__loc={search:'?drill=special'};const {api,els}=boot();global.__loc={search:'?drill=nope'};const b=boot();global.__loc=undefined;
+  report('drill','daily-drill deep link: ?drill=special opens the Special situations drill on load; an unknown id is ignored',!!api.QZ()&&api.QZ().cfg&&api.QZ().cfg.id==='special'&&!els.quizov.classList.contains('hidden')&&!b.api.QZ()&&b.els.quizov.classList.contains('hidden'),`title ${els['qz-title'].textContent}`);}
+
 if(want.includes('smooth')){
   const spy=el=>{let n=0,v='';Object.defineProperty(el,'innerHTML',{get:()=>v,set:x=>{v=x;n++;},configurable:true});return ()=>n;};
   const start=(id,tier=0)=>{global.__T=1000;const B=boot();B.api.setTier(tier);B.api.runStart(id);return B;};

@@ -153,7 +153,7 @@ body.tv{max-width:1100px}.brand{color:var(--red2)}@media (min-width:1000px){body
 <div class="overlay hidden" id="infoov" style="z-index:15"><div class="box"><div id="info-b"></div><button class="go" id="info-close" style="width:100%;margin-top:10px">Close</button></div></div>
 <script>
 /* =================== core =================== */
-const APP_VERSION='0.11.0';
+const APP_VERSION='0.12.0';
 /* Screen wake lock (Milestone 1): keeps the phone from dimming or locking during a timed skill.
    On only while an activity runs: keepAwake(true) when it starts, keepAwake(false) back at the menu or on the result screen. */
 const WAKE={s:null,want:false};
@@ -501,6 +501,8 @@ function homeRender(){const R=readiness();const runs=load().runs||[];let ndue=0;
 /* =================== boot =================== */
 if('serviceWorker' in navigator&&location.protocol==='https:')window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
 applySettings();settingsBind();pcDrillBind();showHome();setInterval(runTick,150);
+/* the home page's daily drill deep-links here: bls-ready/?drill=numbers */
+{const q=new URLSearchParams((typeof location!=='undefined'&&location.search)||'').get('drill');if(q&&DRILLS[q])quizStart(DRILLS[q].name,DRILLS[q].bank(),DRILLS[q].bank().length,'drill',q);}
 </script>
 </body>
 </html>
