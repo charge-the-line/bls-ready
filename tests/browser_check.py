@@ -15,6 +15,7 @@ with sync_playwright() as p:
         pg.on('pageerror', lambda e: errs.append(str(e)))
         pg.goto(URL); pg.wait_for_timeout(300); rows.append((w, 'home', (pg.evaluate(OVER)+1000*pg.evaluate(SMALL))))
         pg.click('#h-learn'); pg.wait_for_timeout(150); rows.append((w, 'lesson', (pg.evaluate(OVER)+1000*pg.evaluate(SMALL)))); pg.click('[data-l="quit"]')
+        pg.click('#h-set'); pg.wait_for_timeout(150); rows.append((w, 'settings', (pg.evaluate(OVER)+1000*pg.evaluate(SMALL)))); pg.click('#set-close')
         for rid in ('tempo','adult','infant','bvm','chokeA','chokeI','team','opioid','baby','child'):
             pg.goto(URL); pg.wait_for_timeout(150); pg.click(f'[data-run="{rid}"]'); pg.wait_for_timeout(150)
             for _ in range(6):   # tap through the first few steps with real clicks
@@ -47,6 +48,7 @@ with sync_playwright() as p:
                     if k == 'rhythm': adv(6); woke('[data-r="rhythm"]'); pg.click('[data-r="rhythm"]'); continue
                     if k == 'alt':
                         x = pg.evaluate("RUN.st.inCyc<5?'a':'b'"); adv(0.6); woke(f'[data-r="alt"][data-x="{x}"]'); pg.click(f'[data-r="alt"][data-x="{x}"]'); continue
+                pg.wait_for_timeout(800)   # the score counts up for about 0.6 s; a person reads it once it settles
                 score = pg.text_content('#done-s') if ok else '—'
                 rows.append((w, rid + ' (full)', 0 if ok and score == '100' else 99))
         pg.goto(URL); pg.wait_for_timeout(150); pg.click('#h-exam'); pg.wait_for_timeout(150); rows.append((w, 'exam', (pg.evaluate(OVER)+1000*pg.evaluate(SMALL))))

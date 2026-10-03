@@ -41,26 +41,44 @@
 button{min-height:48px}
 </style>
 <style>
-:root{--bg:#111820;--deck:#18222e;--deck2:#22303f;--line:#34485e;--ink:#f2f6fa;--soft:#aebdcc;--red:#2f80ed;--red2:#5aa3ff;--alarm:#e5383b;--green:#39e36f;--amber:#ffc23d;--blue:#6fd3ff}
+:root{--bg:#0a0c0f;--deck:#14171c;--deck2:#1c2026;--line:#2a2f37;--ink:#f6f7f9;--soft:#aab2bd;--acc:#3b8bff;--acc-ink:#0a0c0f;--red:#3b8bff;--red2:#6fa8ff;--alarm:#e5383b;--green:#39e36f;--amber:#ffc23d;--blue:#6fd3ff}
 *{box-sizing:border-box}
 html,body{margin:0;background:var(--bg);color:var(--ink);font-family:"Atkinson Hyperlegible",system-ui,sans-serif;-webkit-text-size-adjust:100%}
 body{max-width:540px;margin:0 auto;padding:calc(10px + env(safe-area-inset-top,0px)) calc(12px + env(safe-area-inset-right,0px)) calc(40px + env(safe-area-inset-bottom,0px)) calc(12px + env(safe-area-inset-left,0px))}
 h1,h2,h3,.num{font-family:"Saira Condensed","Arial Narrow",sans-serif}
-button{font-family:inherit;font-size:15px;border-radius:10px;padding:11px 12px;cursor:pointer;color:var(--ink);background:var(--deck2);border:1px solid var(--line);touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;line-height:1.15}
+button{font-family:inherit;font-size:15px;border-radius:6px;padding:11px 12px;cursor:pointer;color:var(--ink);background:var(--deck2);border:1px solid var(--line);touch-action:manipulation;-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;line-height:1.15}
 button:active{transform:translateY(1px)}button:disabled{opacity:.35;cursor:default}
 button:focus-visible{outline:2px solid var(--red2);outline-offset:2px}
-.go{background:var(--red);border-color:var(--red);color:#fff;font-weight:700}
+.go{background:var(--acc);border-color:var(--acc);color:var(--acc-ink);font-family:"Saira Condensed",sans-serif;font-weight:600;font-size:18px;letter-spacing:.5px;text-transform:uppercase}
 .on{background:#1f6b45!important;border-color:#2f9e66!important;color:#fff}
 .hot{background:var(--red)!important;border-color:var(--red)!important;color:#fff;animation:pulse 1s infinite}
 .hold{background:#1d4f8f!important;border-color:var(--red2)!important;color:#fff;box-shadow:0 0 0 3px rgba(229,56,59,.35) inset}
 @keyframes pulse{50%{box-shadow:0 0 0 4px rgba(229,56,59,.35)}}
-@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 .hidden{display:none!important}
+/* Preconnect look v2, "Station" (Milestone 2). Tokens first; every module keeps its own accent (--acc). */
+html[data-contrast="high"]{--bg:#000;--deck:#0e1013;--deck2:#181b20;--line:#4b535e;--ink:#fff;--soft:#d6dce3}
+html[data-text="large"] body{zoom:1.12}
+.sec{font-family:"Saira Condensed",sans-serif;font-weight:600;font-size:14px;letter-spacing:2.5px;text-transform:uppercase;color:var(--soft);margin:22px 0 8px;display:flex;align-items:center;gap:10px}.sec:after{content:"";flex:1;height:1px;background:var(--line)}
+.chip{display:inline-block;font-family:"Saira Condensed",sans-serif;font-weight:600;font-size:14px;letter-spacing:.5px;padding:2px 8px;border-radius:4px;background:var(--acc);color:var(--acc-ink);white-space:nowrap;line-height:1.5}.chip.dim{background:var(--deck2);color:var(--soft)}
+.num{font-family:"Saira Condensed",sans-serif;font-weight:700;font-size:34px;line-height:1;color:var(--acc)}
+.small{font-size:13px;color:var(--soft)}.flex{display:flex;align-items:center;gap:12px}.sp{flex:1}
+.seg{display:flex;gap:3px;margin-top:8px}.seg i{flex:1;height:8px;background:var(--line);border-radius:1px}.seg i.on{background:var(--acc);transform-origin:left;animation:fill .5s ease-out both}
+@keyframes fill{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes slidein{from{opacity:0;transform:translateY(-6px)}to{opacity:1;transform:none}}.in{animation:slidein .25s ease-out both}
+/* Report-style tables (direction B) for debriefs and the training record */
+.pc-table{width:100%;border-collapse:collapse;font-size:15px}.pc-table td{padding:8px 0;border-top:1px solid var(--line);vertical-align:top}.pc-table tr:first-child td{border-top:0}.pc-table td.l{color:var(--soft)}.pc-table td:last-child{text-align:right;font-family:"Saira Condensed",sans-serif;font-size:18px;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap;padding-left:10px}
+/* Settings sheet */
+.set{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:10px 0;border-top:1px solid var(--line)}.set:first-of-type{border-top:0}.set .k{font-size:16px}.set .k small{display:block;font-size:13px;color:var(--soft);line-height:1.35}
+.seg2{display:inline-flex;border:2px solid var(--line);border-radius:6px;overflow:hidden;flex:none}.seg2 button{border:0;border-radius:0;min-height:46px;padding:8px 12px;font-family:"Saira Condensed",sans-serif;font-weight:600;font-size:15px;text-transform:uppercase;letter-spacing:.5px;background:transparent;color:var(--ink)}.seg2 button.on{background:var(--ink)!important;border-color:var(--ink)!important;color:#0a0c0f!important}
+.gear{min-height:46px;padding:8px 10px;font-family:"Saira Condensed",sans-serif;font-weight:600;font-size:15px;letter-spacing:.5px;text-transform:uppercase;background:transparent;border:2px solid var(--line);color:var(--ink);border-radius:6px}
+/* Motion means something; none of it is decoration. Reduce Motion on the phone, or Motion = Off in Settings, stops all of it. */
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+html[data-motion="off"] *{animation:none!important;transition:none!important}
 .brand{font-family:"Saira Condensed",sans-serif;font-weight:700;font-size:15px;letter-spacing:1.5px;color:var(--red2)}
 .top{display:flex;justify-content:space-between;align-items:flex-start;gap:8px;margin-bottom:8px}
 .top h1{margin:0;font-size:24px;font-weight:600;line-height:1.05}
 .meta{text-align:right;font-size:14px;color:var(--soft)}.meta b{color:var(--ink);font-family:"Saira Condensed";font-size:18px}
-.card{background:var(--deck);border:1px solid var(--line);border-radius:14px;padding:12px;margin-bottom:10px}
+.card{background:var(--deck);border:0;border-left:4px solid var(--acc);border-radius:6px;padding:12px 14px;margin-bottom:10px}.card.rdy{background:linear-gradient(135deg,rgba(59,139,255,.22),var(--deck) 70%)}
 .card h2{margin:0 0 4px;font-size:22px;font-weight:600}
 .sub{font-size:14px;color:var(--soft);margin:0 0 8px}
 .row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.row.three{grid-template-columns:repeat(3,minmax(0,1fr))}
@@ -77,53 +95,52 @@ button:focus-visible{outline:2px solid var(--red2);outline-offset:2px}
 .radio{font-size:15px;line-height:1.4;max-height:170px;overflow:auto}.radio div{padding:4px 0;border-top:1px dashed #2a3a4c}.radio div:first-child{border-top:0}
 .radio .who{color:var(--red2);font-weight:700}.radio .bad{color:#ff9a96}.radio .good{color:#7fe3a4}
 .overlay{position:fixed;inset:0;background:rgba(6,10,16,.93);display:flex;align-items:flex-start;justify-content:center;padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px));z-index:10;overflow:auto}
-.overlay .box{background:var(--deck);border:1px solid var(--line);border-radius:16px;padding:18px;max-width:480px;width:100%;margin:auto}
+.overlay .box{background:var(--deck);border:1px solid var(--line);border-radius:8px;padding:18px;max-width:480px;width:100%;margin:auto}
 .overlay h2{font-size:27px;margin:0 0 8px;font-weight:600;line-height:1.1}
 .overlay p{font-size:16px;line-height:1.5;color:#dce6f0;margin:0 0 12px}
-.tag{display:inline-block;font-size:13px;font-weight:700;border-radius:6px;padding:2px 8px;margin-bottom:8px;background:var(--red);color:#fff}
+.tag{display:inline-block;font-family:"Saira Condensed",sans-serif;font-size:14px;font-weight:600;letter-spacing:.5px;border-radius:4px;padding:2px 8px;margin-bottom:8px;background:var(--acc);color:var(--acc-ink)}
 .opt{display:block;width:100%;text-align:left;margin-bottom:8px;padding:12px;font-size:16px}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0 12px}.chip{padding:7px 11px;font-size:14px;border-radius:16px;background:#1d3350;border-color:#3a6ea8;color:#d6e8ff}
 .big{font-family:"Saira Condensed";font-size:60px;font-weight:700;color:var(--red2);line-height:1}
 .mrow{display:flex;justify-content:space-between;gap:10px;padding:6px 0;border-top:1px solid #2a3a4c;font-size:15px}.mrow:first-child{border-top:0}.mrow span{color:var(--soft)}
 .tiers{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:6px 0 10px}
-.scen{display:block;width:100%;text-align:left;padding:12px;margin-bottom:8px}.scen b{display:block;font-family:"Saira Condensed";font-size:21px;font-weight:600}.scen span{font-size:14px;color:var(--soft)}
-.sec{font-family:"Saira Condensed";font-size:15px;letter-spacing:1px;color:var(--red2);margin:14px 0 6px}
+.scen{display:block;width:100%;text-align:left;padding:12px 70px 12px 14px;margin-bottom:8px;position:relative;background:var(--deck);border:0;border-left:4px solid var(--acc);border-radius:6px}.scen b{display:block;font-family:"Saira Condensed";font-size:21px;font-weight:600;line-height:1.05}.scen span{font-size:14px;color:var(--soft)}.scen .chip{position:absolute;right:12px;top:50%;transform:translateY(-50%)}
 .slide h2{font-size:30px}.slide .art{margin:6px 0 12px}.slide ul{margin:0 0 12px;padding-left:20px;font-size:16px;line-height:1.5}.slide li{margin-bottom:4px}
 .dots{display:flex;gap:4px;justify-content:center;margin:8px 0}.dots i{width:8px;height:8px;border-radius:50%;background:#4a3539}.dots i.on2{background:var(--red2)}
 textarea,input{font-family:inherit;font-size:16px;padding:10px;border-radius:8px;border:1px solid var(--line);background:#0d141c;color:var(--ink);width:100%}
 .legal{font-size:12px;color:#8b9cad;line-height:1.45;margin-top:10px}
 .station svg{width:100%;max-width:420px;display:block;margin:0 auto}
 .meter{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--soft);margin:6px 0}.meter .bar{flex:1;height:12px}
-body.tv{max-width:1100px}@media (min-width:1000px){body.tv{zoom:1.3}}
+body.tv{max-width:1100px}.brand{color:var(--red2)}@media (min-width:1000px){body.tv{zoom:1.3}}
 .cool{opacity:.45;pointer-events:none}
 .beat{animation:beat .545s infinite}@keyframes beat{0%{box-shadow:0 0 0 0 rgba(90,163,255,.55)}35%{box-shadow:0 0 0 7px rgba(90,163,255,0)}100%{box-shadow:0 0 0 0 rgba(90,163,255,0)}}
 .pad,#run-stop{touch-action:none}
-.pad{width:100%;height:150px;font-size:24px;font-family:"Saira Condensed",sans-serif;background:#13273f;border-color:var(--red2)}
-.kv{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:6px 0}.kv div{background:#0d141c;border:1px solid var(--line);border-radius:8px;padding:6px;text-align:center}.kv b{display:block;font-family:"Saira Condensed";font-size:24px}.kv span{font-size:11px;color:var(--soft)}
+.pad{width:100%;height:150px;font-size:24px;font-family:"Saira Condensed",sans-serif;background:#102033;border-color:var(--red2);border-radius:6px}
+.kv{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:6px 0}.kv div{background:#0a0c0f;border:1px solid var(--line);border-radius:6px;padding:6px;text-align:center}.kv b{display:block;font-family:"Saira Condensed";font-size:24px}.kv span{font-size:11px;color:var(--soft)}
 </style>
 </head>
 <body>
 <div id="home">
-  <div style="display:flex;justify-content:space-between;align-items:center;margin:0 0 6px"><a href="../" style="display:inline-block;font-size:13px;font-weight:700;letter-spacing:.5px;color:#ff8a3d;text-decoration:none;margin:0">◂ PRECONNECT</a><a href="../feedback.html?from=bls" style="font-size:13px;font-weight:700;color:#9aa3ad;text-decoration:none">Feedback</a></div>
-  <div class="top"><div><div class="brand">BLS READY</div><h1>High-quality CPR, every time.</h1></div></div>
-  <p class="sub" style="font-size:15px">Practice for Basic Life Support: learn it, drill the skills on a real clock, run team scenarios, and get ready for the exam. Updated for the 2025 guidelines.</p>
-  <div class="sec">1 · LEARN</div>
-  <button class="scen" id="h-learn"><b>The lesson</b><span>14 short slides in course order, each with a check · includes the 2025 changes</span></button>
-  <div class="sec">2 · PRACTICE THE SKILLS</div>
-  <button class="scen" data-run="tempo"><b>Compressions and breaths</b><span>Tap the tempo: 30 compressions at 100–120, two breaths, back on the chest in under 10 seconds</span></button>
-  <button class="scen" data-run="adult"><b>Adult CPR and AED</b><span>Skills-test style: scene, check, call, compress, breathe, AED — timed on a real clock</span></button>
-  <button class="scen" data-run="infant"><b>Infant CPR — two rescuers</b><span>The 2025 technique, 15:2, and back on the chest fast</span></button>
-  <button class="scen" data-run="bvm"><b>Bag-mask breaths</b><span>Seal it, then one breath every 6 seconds — not faster</span></button>
-  <button class="scen" data-run="chokeA"><b>Choking — adult or child</b><span>2025: back blows first, then abdominal thrusts</span></button>
-  <button class="scen" data-run="chokeI"><b>Choking — infant</b><span>Back blows and chest thrusts — never abdominal thrusts</span></button>
-  <div class="sec">3 · TEAM SCENARIOS</div>
-  <button class="scen" data-run="team"><b>Collapse in the hallway</b><span>Two rescuers, an AED, and a switch every two minutes</span></button>
-  <button class="scen" data-run="opioid"><b>Found in the restroom</b><span>A pulse but not breathing — then it changes</span></button>
-  <button class="scen" data-run="baby"><b>Infant at the daycare</b><span>One rescuer, then two — the ratio changes</span></button>
-  <button class="scen" data-run="child"><b>Choking at the birthday party</b><span>She stops responding. Now what?</span></button>
+  <div class="flex" style="margin:0 0 8px"><a href="../" style="display:inline-flex;align-items:center;min-height:44px;font-family:'Saira Condensed';font-size:15px;font-weight:600;letter-spacing:1px;color:#ff8a3d;text-decoration:none">◂ PRECONNECT</a><div class="sp"></div><a href="../feedback.html?from=bls" style="display:inline-flex;align-items:center;min-height:44px;font-size:14px;font-weight:700;color:var(--soft);text-decoration:none;margin-right:12px">Feedback</a><button class="gear" id="h-set">Settings</button></div>
+  <div class="top"><div><div class="brand" style="font-size:34px;letter-spacing:3px;color:var(--acc)">BLS READY</div><h1 style="font-size:19px;font-weight:400;font-family:'Atkinson Hyperlegible',system-ui,sans-serif;margin-top:2px">High-quality CPR, every time.</h1></div></div>
+  <div class="card rdy" id="rdy"><div class="flex"><div><div class="small">Your readiness</div><b id="rdy-t" style="display:block;font-family:'Saira Condensed';font-size:22px;line-height:1.05"></b><div class="small" id="rdy-s"></div></div><div class="sp"></div><div class="num" id="rdy-n"></div></div><div class="bar" style="height:8px;margin-top:10px;background:var(--line)"><div id="rdy-bar" style="background:var(--acc);transition:width .6s ease-out"></div></div></div>
+  <div class="sec">1 · Learn</div>
+  <button class="scen" id="h-learn"><span class="chip dim" id="chip-lesson">—</span><b>The lesson</b><span>14 short slides in course order, each with a check · includes the 2025 changes</span></button>
+  <div class="sec">2 · Practice the skills</div>
+  <button class="scen" data-run="tempo"><span class="chip dim" id="chip-tempo">—</span><b>Compressions and breaths</b><span>Tap the tempo: 30 compressions at 100–120, two breaths, back on the chest in under 10 seconds</span></button>
+  <button class="scen" data-run="adult"><span class="chip dim" id="chip-adult">—</span><b>Adult CPR and AED</b><span>Skills-test style: scene, check, call, compress, breathe, AED — timed on a real clock</span></button>
+  <button class="scen" data-run="infant"><span class="chip dim" id="chip-infant">—</span><b>Infant CPR — two rescuers</b><span>The 2025 technique, 15:2, and back on the chest fast</span></button>
+  <button class="scen" data-run="bvm"><span class="chip dim" id="chip-bvm">—</span><b>Bag-mask breaths</b><span>Seal it, then one breath every 6 seconds — not faster</span></button>
+  <button class="scen" data-run="chokeA"><span class="chip dim" id="chip-chokeA">—</span><b>Choking — adult or child</b><span>2025: back blows first, then abdominal thrusts</span></button>
+  <button class="scen" data-run="chokeI"><span class="chip dim" id="chip-chokeI">—</span><b>Choking — infant</b><span>Back blows and chest thrusts — never abdominal thrusts</span></button>
+  <div class="sec">3 · Team scenarios</div>
+  <button class="scen" data-run="team"><span class="chip dim" id="chip-team">—</span><b>Collapse in the hallway</b><span>Two rescuers, an AED, and a switch every two minutes</span></button>
+  <button class="scen" data-run="opioid"><span class="chip dim" id="chip-opioid">—</span><b>Found in the restroom</b><span>A pulse but not breathing — then it changes</span></button>
+  <button class="scen" data-run="baby"><span class="chip dim" id="chip-baby">—</span><b>Infant at the daycare</b><span>One rescuer, then two — the ratio changes</span></button>
+  <button class="scen" data-run="child"><span class="chip dim" id="chip-child">—</span><b>Choking at the birthday party</b><span>She stops responding. Now what?</span></button>
   <div class="tiers" style="grid-template-columns:repeat(2,1fr)"><button data-tier="0">Guided</button><button data-tier="1">Recall</button></div>
   <p class="stat" id="tierhelp" style="margin:0 0 10px"></p>
-  <div class="sec">4 · TEST YOURSELF</div>
+  <div class="sec">4 · Test yourself</div>
   <div class="row"><button id="h-exam" class="go">Exam practice</button><button id="h-drills">Quick drills</button><button id="h-ref">Pocket reference</button><button id="h-prog">My progress</button></div>
   <button id="h-about" style="width:100%;margin-top:6px">About this app</button>
   <p class="legal">A practice tool. It does not replace an official course or issue certification. Take an official in-person BLS course, such as the American Heart Association's. Not affiliated with or endorsed by the American Heart Association.</p>
@@ -133,10 +150,23 @@ body.tv{max-width:1100px}@media (min-width:1000px){body.tv{zoom:1.3}}
 <div class="overlay hidden" id="quizov" style="z-index:12"><div class="box"><div style="display:flex;justify-content:space-between;align-items:baseline"><h2 id="qz-title" style="margin:0">Quiz</h2><span id="qz-meta" class="stat"></span></div><div id="qz-body" style="margin-top:10px"></div><div id="qz-foot" style="margin-top:10px"></div></div></div>
 <div class="overlay hidden" id="doneov" style="z-index:13"><div class="box"><h2 id="done-t"></h2><div class="big" id="done-s"></div><div id="done-b"></div>
   <div class="row" style="margin-top:10px"><button id="done-again">Again</button><button class="go" id="done-menu">Menu</button></div></div></div>
+<div class="overlay hidden" id="setov" style="z-index:20"><div class="box">
+ <div class="flex"><h2 style="margin:0">Settings</h2><div class="sp"></div><button class="gear" id="set-close">Done</button></div>
+ <div class="sec">Display</div>
+ <div class="set"><div class="k">Text size</div><div class="seg2" data-set="text"><button data-val="normal">Normal</button><button data-val="large">Large</button></div></div>
+ <div class="set"><div class="k">High contrast<small>Black background, brighter text: for daylight.</small></div><div class="seg2" data-set="contrast"><button data-val="normal">Off</button><button data-val="high">On</button></div></div>
+ <div class="set"><div class="k">Motion<small>Auto follows your phone's Reduce Motion setting.</small></div><div class="seg2" data-set="motion"><button data-val="auto">Auto</button><button data-val="off">Off</button></div></div>
+ <div class="sec">Feedback</div>
+ <div class="set"><div class="k">Sound<small>Monitor beeps, metronome, voice prompts, in modules that have them.</small></div><div class="seg2" data-set="sound"><button data-val="off">Off</button><button data-val="on">On</button></div></div>
+ <div class="set"><div class="k">Haptics<small>A tap you can feel on compressions and mistakes.</small></div><div class="seg2" data-set="haptics"><button data-val="off">Off</button><button data-val="on">On</button></div></div>
+ <div class="sec">Privacy</div>
+ <div class="set"><div class="k">Anonymous statistics<small>Counts like "someone finished the infant station." Never names. <a href="../privacy.html" style="color:var(--acc)">Details</a></small></div><div class="seg2" data-set="stats"><button data-val="off">Off</button><button data-val="on">On</button></div></div>
+ <p class="stat" style="margin-top:10px">Settings apply to every Preconnect module on this phone.</p>
+</div></div>
 <div class="overlay hidden" id="infoov" style="z-index:15"><div class="box"><div id="info-b"></div><button class="go" id="info-close" style="width:100%;margin-top:10px">Close</button></div></div>
 <script>
 /* =================== core =================== */
-const APP_VERSION='0.5.0';
+const APP_VERSION='0.6.0';
 /* Screen wake lock (Milestone 1): keeps the phone from dimming or locking during a timed skill.
    On only while an activity runs: keepAwake(true) when it starts, keepAwake(false) back at the menu or on the result screen. */
 const WAKE={s:null,want:false};
@@ -146,6 +176,20 @@ function keepAwake(on){WAKE.want=!!on;const wl=(typeof navigator!=='undefined')&
 if(typeof document!=='undefined'&&document.addEventListener)document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&WAKE.want&&!WAKE.s)keepAwake(true);});
 
 const $=id=>document.getElementById(id);
+/* Preconnect settings (Milestone 2): one sheet, one key ('preconnect-settings'), honored by every module. Statistics use the Privacy page's key. */
+const SETKEY='preconnect-settings',SETDEF={sound:'off',haptics:'on',text:'normal',contrast:'normal',motion:'auto'};
+function settings(){let s={};try{s=JSON.parse(localStorage.getItem(SETKEY))||{};}catch(e){}const out=Object.assign({},SETDEF,s);let st='on';try{st=localStorage.getItem('preconnect-stats')==='off'?'off':'on';}catch(e){}out.stats=st;return out;}
+function setSetting(k,v){if(k==='stats'){try{if(v==='off')localStorage.setItem('preconnect-stats','off');else localStorage.removeItem('preconnect-stats');}catch(e){}try{if(window.PCA)window.PCA.off=(v==='off');}catch(e){}}
+  else{let s={};try{s=JSON.parse(localStorage.getItem(SETKEY))||{};}catch(e){}s[k]=v;try{localStorage.setItem(SETKEY,JSON.stringify(s));}catch(e){}}
+  applySettings();settingsRender();}
+function applySettings(){const s=settings();const de=(typeof document!=='undefined')&&document.documentElement;if(!de||!de.dataset)return;de.dataset.text=s.text;de.dataset.contrast=s.contrast;de.dataset.motion=s.motion;}
+function settingsRender(){const s=settings();if(!document.querySelectorAll)return;document.querySelectorAll('[data-set]').forEach(g=>{const k=g.dataset.set;g.querySelectorAll('button').forEach(b=>b.classList.toggle('on',b.dataset.val===s[k]));});}
+function settingsBind(){const ov=$('setov');if(!ov)return;ov.onclick=e=>{const b=e.target&&e.target.closest&&e.target.closest('[data-set] button');if(b)setSetting(b.closest('[data-set]').dataset.set,b.dataset.val);};$('set-close').onclick=()=>ov.classList.add('hidden');const g=$('h-set');if(g)g.onclick=()=>{settingsRender();ov.classList.remove('hidden');ov.scrollTop=0;};}
+function motionOK(){if(settings().motion==='off')return false;try{if(typeof matchMedia==='function'&&matchMedia('(prefers-reduced-motion: reduce)').matches)return false;}catch(e){}return true;}
+/* A score that counts up to its final value (about 0.6 s). Without animation frames, or with motion off, it lands immediately. */
+function countUp(el,to,ms){if(!el)return;if(el.setAttribute)el.setAttribute('data-final',String(to));const n=+to||0,raf=(typeof requestAnimationFrame==='function')?requestAnimationFrame:null;if(!raf||!motionOK()){el.textContent=String(to);return;}const t0=performance.now();const step=t=>{const p=Math.min(1,(t-t0)/(ms||600)),e=1-Math.pow(1-p,3);el.textContent=String(Math.round(n*e));if(p<1)raf(step);else el.textContent=String(to);};raf(step);}
+function haptic(ms){if(settings().haptics!=='on')return false;try{if(typeof navigator!=='undefined'&&navigator.vibrate){navigator.vibrate(ms||8);return true;}}catch(e){}return false;}
+
 const esc=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 const pick=a=>a[Math.floor(Math.random()*a.length)];
 const shuf=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}return a;};
@@ -155,11 +199,11 @@ const KEY='bls-ready';
 function load(){try{return JSON.parse(localStorage.getItem(KEY))||{runs:[]};}catch(e){return {runs:[]};}}
 function save(p){try{localStorage.setItem(KEY,JSON.stringify(p));}catch(e){}}
 function record(kind,id,score,extra){const p=load();p.runs=(p.runs||[]).concat([Object.assign({kind,id,score,d:new Date().toISOString(),tier:TIER},extra||{})]).slice(-500);save(p);}
-function showHome(){keepAwake(false);['runov','lessonov','quizov','doneov'].forEach(i=>$(i).classList.add('hidden'));document.querySelectorAll('[data-tier]').forEach(b=>b.classList.toggle('on',+b.dataset.tier===TIER));$('tierhelp').textContent=['Guided: hints and coaching as you go.','Recall: no hints. Run it like the real skills test.'][TIER];}
+function showHome(){keepAwake(false);['runov','lessonov','quizov','doneov'].forEach(i=>$(i).classList.add('hidden'));document.querySelectorAll('[data-tier]').forEach(b=>b.classList.toggle('on',+b.dataset.tier===TIER));$('tierhelp').textContent=['Guided: hints and coaching as you go.','Recall: no hints. Run it like the real skills test.'][TIER];if(typeof homeRender==='function')homeRender();}
 document.querySelectorAll('[data-tier]').forEach(b=>b.onclick=()=>{TIER=+b.dataset.tier;showHome();});
 let AGAIN=null;
 let DONEGUARD=0;
-function showDone(t,score,html,again){keepAwake(false);DONEGUARD=NOW()+.7;$('done-t').textContent=t;$('done-s').textContent=score;$('done-b').innerHTML=html;AGAIN=again;$('doneov').classList.remove('hidden');}
+function showDone(t,score,html,again){keepAwake(false);DONEGUARD=NOW()+.7;$('done-t').textContent=t;countUp($('done-s'),score,600);$('done-b').innerHTML=html;AGAIN=again;$('doneov').classList.remove('hidden');}
 $('done-again').onclick=()=>{if(NOW()<DONEGUARD)return;$('doneov').classList.add('hidden');if(AGAIN)AGAIN();};$('done-menu').onclick=()=>{if(NOW()<DONEGUARD)return;$('doneov').classList.add('hidden');showHome();};
 function info(h){$('info-b').innerHTML=h;$('infoov').classList.remove('hidden');}$('info-close').onclick=()=>$('infoov').classList.add('hidden');
 /* =================== the lesson =================== */
@@ -334,7 +378,7 @@ function runBuild(){const s=RUN.steps[RUN.i],st=RUN.st;if(!s)return;let body='',
   runUpd();}
 function runUpd(){if(!RUN)return;const s=RUN.steps[RUN.i],st=RUN.st;if(!s)return;const t=NOW(),m=RUN.m,set=(id,v)=>{const e=$(id);if(e&&e.textContent!==String(v))e.textContent=v;};
   set('run-score',RUN.score);
-  const nowEl=$('run-now');if(nowEl){const h=RUN.msg?`<span style="color:${RUN.msg.cls==='bad'?'#ff9a96':RUN.msg.cls==='good'?'#7fe3a4':'var(--soft)'}">${RUN.msg.html}</span>`:'';if(nowEl._h!==h){nowEl.innerHTML=h;nowEl._h=h;}}
+  const nowEl=$('run-now');if(nowEl){const h=RUN.msg?`<span style="color:${RUN.msg.cls==='bad'?'#ff9a96':RUN.msg.cls==='good'?'#7fe3a4':'var(--soft)'}">${RUN.msg.html}</span>`:'';if(nowEl._h!==h){nowEl.innerHTML=h;nowEl._h=h;if(h&&nowEl.classList){nowEl.classList.remove('in');void nowEl.offsetWidth;nowEl.classList.add('in');}}}
   const cool=t<RUN.guard;document.querySelectorAll&&document.querySelectorAll('#run-box .cool').forEach(b=>{if(!cool)b.classList.remove('cool');});
   let coach='',col='';
   if(s.k==='timer'&&st.t0!==null){const d=t-st.t0;set('kv-a',TIER===0?d.toFixed(0):'…');const e=$('kv-a');if(e)e.style.color=d>s.hi?'#ff9a96':d>=s.lo?'#39e36f':'';}
@@ -354,7 +398,7 @@ function runAct(ds){if(!RUN)return;const s=RUN.steps[RUN.i],st=RUN.st,a=ds.r,t=N
   if(s.k==='timer'&&a==='timer'){if(st.t0===null){st.t0=t;const p=$('run-pad');if(p)p.textContent=s.stop;say('Checking… count it out.','');runUpd();return;}const d=t-st.t0;m.pulse.push(d);
     if(d<s.lo)penal(5,`Only ${d.toFixed(0)} seconds — take at least ${s.lo}.`);else if(d>s.hi+.5)penal(5,`${d.toFixed(0)} seconds — never more than ${s.hi}.`);else say(`✓ Checked for ${d.toFixed(0)} seconds.`,'good');
     if(s.recog)m.recogEnd=t;stepNext(d.toFixed(0)+' s');return;}
-  if(s.k==='tap'&&a==='tap'){if(navigator.vibrate)try{navigator.vibrate(8);}catch(e){}
+  if(s.k==='tap'&&a==='tap'){haptic(8);
     if(!st.taps.length){if(m.firstComp===null){m.firstComp=t;if(m.recogEnd!==null){m.toComp=t-m.recogEnd;if(m.toComp>10)penal(5,`${m.toComp.toFixed(0)} seconds from recognizing arrest to the first compression — start within 10.`);}}
       if(m.compEnd!==null){const p=t-m.compEnd;if(!m.aed){m.pauses.push(p);m.longest=Math.max(m.longest,p);if(p>10)penal(5,`Hands off for ${p.toFixed(0)} seconds — keep pauses under 10.`);else say(`✓ Back on the chest — hands off ${p.toFixed(1)} s.`,'good');}else say('✓ Back on the chest.','good');m.aed=false;}}
     st.taps.push(t);if(st.taps.length>=s.n){const iv=[];for(let i=1;i<st.taps.length;i++)iv.push(st.taps[i]-st.taps[i-1]);const W=Math.min(5,iv.length),rates=[];for(let i=W-1;i<iv.length;i++){let sum=0;for(let k=i-W+1;k<=i;k++)sum+=iv[k];rates.push(60/(sum/W));}const inR=rates.filter(r=>r>=100&&r<=120).length/rates.length;const avg=60/(iv.reduce((a,b)=>a+b,0)/iv.length);
@@ -373,8 +417,8 @@ function runFinish(){const m=RUN.m,def=RUN.def,id=RUN.id;const avg=m.rates.lengt
   const rows=[...(avg!==null?[['Average compression rate',avg+' / min (100–120)'],['Compressions in the zone',inR+'%']]:[]),...(m.pauses.length?[['Longest hands-off pause',m.longest.toFixed(1)+' s (under 10)']]:[]),...(m.toComp!==null?[['Recognition to first compression',m.toComp.toFixed(1)+' s (within 10)']]:[]),...(m.pulse.length?[['Pulse checks',m.pulse.map(x=>x.toFixed(0)+' s').join(', ')+' (5–10)']]:[])];
   const score=RUN.score,errs=RUN.errs.slice(),log=RUN.log.slice();pca('end',`${['guided','recall'][TIER]}/${pca('att',(load().runs||[]).filter(r=>r.id===id&&r.kind!=='lesson').length+1)}/${pca('bkt',RUN.score)}`);record(def.scen?'scenario':'station',id,score);$('runov').classList.add('hidden');RUN=null;
   const mm=x=>Math.floor(x/60)+':'+String(Math.floor(x%60)).padStart(2,'0');
-  const steps=`<div class="sec" style="margin-top:12px">YOUR STEPS</div>${log.map(l=>`<div class="mrow"><span>${l.ok?'<b style="color:#7fe3a4">✓</b>':'<b style="color:#ffc23d">⚠</b>'} ${esc(l.name)}${l.detail?` <span style="color:var(--soft)">· ${esc(l.detail)}</span>`:''}</span><b style="white-space:nowrap">${mm(l.at)}</b></div>`).join('')}`;
-  showDone(def.name,score,`${rows.length?`<div>${rows.map(([a,b])=>`<div class="mrow"><span>${a}</span><b style="text-align:right">${esc(b)}</b></div>`).join('')}</div>`:''}${errs.length?`<p style="font-size:14px;margin-top:8px"><b>Feedback:</b> ${errs.map(esc).join(' · ')}</p>`:'<p style="font-size:14px;color:var(--soft);margin-top:8px">Clean run.</p>'}${steps}`,()=>runStart(id));}
+  const steps=`<div class="sec" style="margin-top:12px">Your steps</div><table class="pc-table">${log.map(l=>`<tr><td>${l.ok?'<b style="color:#7fe3a4">✓</b>':'<b style="color:#ffc23d">⚠</b>'} ${esc(l.name)}${l.detail?` <span style="color:var(--soft)">· ${esc(l.detail)}</span>`:''}</td><td>${mm(l.at)}</td></tr>`).join('')}</table>`;
+  showDone(def.name,score,`${rows.length?`<table class="pc-table">${rows.map(([a,b])=>`<tr><td class="l">${a}</td><td>${esc(b)}</td></tr>`).join('')}</table>`:''}${errs.length?`<p style="font-size:14px;margin-top:8px"><b>Feedback:</b> ${errs.map(esc).join(' · ')}</p>`:'<p style="font-size:14px;color:var(--soft);margin-top:8px">Clean run.</p>'}${steps}`,()=>runStart(id));}
 const PADACTS={tap:1,breath:1,rhythm:1,alt:1,over:1};
 $('run-box').onpointerdown=e=>{const b=e.target.closest&&e.target.closest('[data-r]');if(b&&PADACTS[b.dataset.r]){e.preventDefault();runAct(b.dataset);}};
 $('run-box').onclick=e=>{const b=e.target.closest&&e.target.closest('[data-r]');if(b&&!PADACTS[b.dataset.r])runAct(b.dataset);};
@@ -435,9 +479,17 @@ $('h-prog').onclick=()=>{const p=load();const R=p.runs||[];const best=(k,id)=>{c
     const label=r=>r.kind==='lesson'?'The lesson':r.kind==='exam'?'Exam practice':r.kind==='drill'?DRILLS[r.id].name:DEFS[r.id].name;
     const rows=[['Name','Organization','Type','Activity','Date','Mode','Score']].concat((q.runs||[]).map(r=>[q.name||'',q.dept||'',nm[r.kind],label(r),r.d.slice(0,16).replace('T',' '),['Guided','Recall'][r.tier]||'',r.score]));
     const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='bls-ready-practice-record.csv';a.click();}catch(e){}};};
+/* =================== home: readiness and best scores (Milestone 2) =================== */
+const ACTS=[['lesson','lesson'],...['tempo','adult','infant','bvm','chokeA','chokeI'].map(i=>['station',i]),...['team','opioid','baby','child'].map(i=>['scenario',i]),['exam','exam'],...Object.keys(DRILLS).map(k=>['drill',k])];
+function readiness(){const R=load().runs||[];const best={};R.forEach(r=>{const k=r.kind+':'+r.id;best[k]=Math.max(best[k]||0,+r.score||0);});const done=ACTS.filter(([k,i])=>best[k+':'+i]!==undefined).length;return {done,total:ACTS.length,pct:Math.round(done/ACTS.length*100),best,exam:best['exam:exam']};}
+function homeRender(){const R=readiness();const chip=(id,k)=>{const e=$('chip-'+id);if(!e)return;const b=R.best[k+':'+id];const t=b===undefined?'—':String(b);if(e.textContent!==t)e.textContent=t;e.classList.toggle('dim',b===undefined);};
+  chip('lesson','lesson');['tempo','adult','infant','bvm','chokeA','chokeI'].forEach(i=>chip(i,'station'));['team','opioid','baby','child'].forEach(i=>chip(i,'scenario'));
+  const t=`${R.done} of ${R.total} activities`;if($('rdy-t').textContent!==t)$('rdy-t').textContent=t;
+  const sub=R.done?`${R.exam!==undefined?'exam practice best '+R.exam+'%':'exam practice not yet'} · ${TIER===0?'Guided':'Recall'} mode`:'Start anywhere. Your best scores show up here.';if($('rdy-s').textContent!==sub)$('rdy-s').textContent=sub;
+  const n=R.pct+'%';if($('rdy-n').textContent!==n)$('rdy-n').textContent=n;const bar=$('rdy-bar');if(bar&&bar.style)bar.style.width=R.pct+'%';}
 /* =================== boot =================== */
 if('serviceWorker' in navigator&&location.protocol==='https:')window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
-showHome();setInterval(runTick,150);
+applySettings();settingsBind();showHome();setInterval(runTick,150);
 </script>
 </body>
 </html>

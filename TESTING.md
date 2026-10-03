@@ -66,3 +66,12 @@ Foundation fixes: fonts served from this site, screen wake lock, finger-sized bu
 - Fonts self-hosted in `fonts/`, no Google reference, every file in the cache list.
 - Screen wake lock: requested when a lesson, station, scenario, or quiz starts, released at home or on the result screen.
 - Browser check: any visible button under 44 px tall fails the screen.
+
+## Milestone 2 checks (added October 2026, `record` section)
+
+- Home shows a best-score chip per activity and a readiness count (1 of 15, 7%).
+- Score count-up lands on the exact value when animation frames are unavailable; the browser check waits for the number to settle before reading it.
+- Haptics follow the shared setting: off means `navigator.vibrate` is never called.
+- Settings saved under `preconnect-settings` and applied to `<html>`.
+- The debrief uses the report-style `.pc-table`.
+- `browser_check.py` also opens the Settings sheet at both widths.

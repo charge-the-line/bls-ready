@@ -73,8 +73,15 @@ if(want.includes('smooth')){
   {const {api,els}=start('adult',1);adv(1);for(const x of api.RUN().steps[0].items){adv(1);act(api,'seq',{x});}adv(1);act(api,'timer');adv(4);api.runAct({r:'noop'});
    report('smooth','Recall hides the pulse-check seconds (count it yourself)',els['kv-a'].textContent==='…');}
   // 5) debrief lists every step
-  {const r=play('team',0);report('smooth','debrief lists your steps',/YOUR STEPS/.test(r.detail)&&(r.detail.match(/✓/g)||[]).length>=10,((r.detail.match(/✓/g)||[]).length)+' steps shown');}
+  {const r=play('team',0);report('smooth','debrief lists your steps',/Your steps/i.test(r.detail)&&(r.detail.match(/✓/g)||[]).length>=10,((r.detail.match(/✓/g)||[]).length)+' steps shown');}
 }
+if(want.includes('record')){// Milestone 2: home readiness, best-score chips, count-up, haptics setting, settings sheet, report-style debrief
+  const {api,els,store}=boot({'bls-ready':JSON.stringify({runs:[{kind:'station',id:'adult',score:80,d:'2026-10-01T10:00:00Z',tier:0},{kind:'station',id:'adult',score:95,d:'2026-10-02T10:00:00Z',tier:0}]})});api.showHome();const R=api.readiness();
+  report('record','home shows a best-score chip per activity and a readiness count',els['chip-adult'].textContent==='95'&&els['chip-tempo'].textContent==='—'&&R.done===1&&R.total===15&&els['rdy-t'].textContent==='1 of 15 activities'&&els['rdy-n'].textContent==='7%',`adult ${els['chip-adult'].textContent}, ${R.done}/${R.total}`);
+  const el={textContent:''};api.countUp(el,87);report('record','score count-up lands on the exact score when motion is unavailable',el.textContent==='87');
+  let v=0;navigator.vibrate=()=>{v++;return true;};api.setSetting('haptics','off');api.haptic(8);const a=v;api.setSetting('haptics','on');api.haptic(8);report('record','haptics follow the shared setting (off means no vibration)',a===0&&v===1,`off ${a}, on ${v}`);delete navigator.vibrate;
+  api.setSetting('text','large');report('record','settings saved under preconnect-settings and applied to the page',JSON.parse(store['preconnect-settings']).text==='large'&&global.document.documentElement.dataset.text==='large');
+  global.__T=1000;api.runStart('tempo');api.runFinish();report('record','debrief uses the report-style table',/<table class="pc-table">/.test(els['done-b'].innerHTML)&&els['done-s'].textContent!=='',els['done-s'].textContent);}
 if(want.includes('fuzz')){let crashes=0;const errs=[];const R=['next','opt','seq','timer','tap','breath','rhythm','alt','quit'];
   for(let run=0;run<60;run++){global.__T=1000;const {api}=boot();api.runStart(IDS[run%IDS.length]);
     try{for(let i=0;i<800&&api.RUN();i++){global.__T+=Math.random()*3;const a=R[Math.floor(Math.random()*(R.length-(i<700?1:0)))],s=api.RUN().steps[api.RUN().i];
