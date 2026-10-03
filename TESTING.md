@@ -31,12 +31,21 @@ python3 tests/browser_check.py
 | `jitter` | Human-like uneven tapping at a good average isn't unfairly punished |
 | `quiz` | Exam practice scores 100 when right and 0 when wrong; every question has three distinct options |
 | `record` | Results save; the CSV export works |
+| `smooth` | No rebuilds while tapping; momentum taps ignored; overshoot never becomes breaths; feedback stays visible; Guided coaches and Recall doesn't; debrief lists your steps |
 | `fuzz` | Random actions never crash |
 | `browser_check.py` | Every screen at 320 and 390 px, **and all 10 activities played to the end with real taps on buttons found by their visible text** |
 
 Verified to catch planted bugs: two-finger technique marked correct, long pauses not penalized, and an over-long pulse check allowed all fail in `run_all.js`. Broken button markup fails in `browser_check.py`.
 
 ## Rules learned the hard way
+
+0. **Design for the finger, not the bot.** A real-person audit of v0.2 found five problems no headless test could: (a) momentum taps after compression #30 landed on the new breath button, delivering both breaths instantly and costing points; (b) penalties appeared and vanished in the same instant, so the score dropped with no explanation; (c) the pad was rebuilt on every compression; (d) an extra tap after a sequence started the pulse-check timer; (e) a 13-second pulse check was penalized silently. The fixes, all guarded by the `smooth` section:
+   - **Build once, update in place.** `runBuild()` draws a step one time; `runUpd()` changes only text and colors. 0 rebuilds per compression.
+   - **Input guard.** New steps ignore taps for 0.45 s, and their buttons are visibly dimmed (`.cool`).
+   - **Mirror the real motion.** After compressions, a "30 ✓ — stop, move to the airway" panel sits where the PUSH pad was, soaking up same-rhythm momentum taps (a timer alone can't, because overshoot arrives at the compression rhythm), and the breath button sits lower.
+   - **Feedback persists** in the `run-now` line: every set, pause, pulse check, and penalty, good or bad.
+   - **Compressions register on touch-down** (`pointerdown`), the way a feedback manikin measures the push, and pads block scroll and zoom (`touch-action:none`).
+   - **Guided coaches live** (rate advice, a visual 110/min metronome, "Breathe now"); **Recall doesn't** (no coaching, and you count the pulse check yourself).
 
 1. **Bots that skip the buttons can't catch button bugs.** The headless bots hand answers straight to the engine. A skills-test step containing quotation marks ("Are you okay?") broke its button's hidden data, so in the real app the step could never be completed, and all 39 headless checks still passed. Only completing every activity in a real browser, by clicking buttons found by their visible text, catches this. That's why `browser_check.py` is required here.
 2. **Measure rate the way a feedback device does.** Scoring each compression on its own interval punished normal human variation. A rolling window of five compressions is fair and realistic.

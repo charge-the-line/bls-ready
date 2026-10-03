@@ -3,7 +3,7 @@
    Sections: syntax content balance lesson clean mistakes jitter quiz record fuzz   (or: quick) */
 global.window=global.window||{};
 const path=require('path'),fs=require('fs'),vm=require('vm');
-const ALL=['syntax','content','balance','lesson','clean','mistakes','jitter','quiz','record','fuzz'];
+const ALL=['syntax','content','balance','lesson','clean','mistakes','jitter','quiz','record','smooth','fuzz'];
 let want=process.argv.slice(2);if(!want.length)want=ALL;if(want.includes('quick'))want=['syntax','content','balance','lesson','quiz','record'];
 let failed=0,n=0;const T0=Date.now();
 function report(sec,name,ok,detail=''){n++;if(!ok)failed++;console.log(`${ok?'PASS':'FAIL'}  ${sec.padEnd(9)} ${name}${detail?'  — '+detail:''}`);}
@@ -36,6 +36,35 @@ if(want.includes('quiz')){const {api,els}=boot();for(const mode of ['right','wro
   let bad=0;api.EXAM.forEach(q=>{if(new Set([q.a,...q.d]).size!==3)bad++;});for(const k in api.DRILLS)api.DRILLS[k].bank().forEach(q=>{if(new Set([q.a,...q.d]).size!==3)bad++;});report('quiz','every question has 3 distinct options',bad===0);}
 if(want.includes('record')){global.__T=1000;const {api,els}=boot();api.lessonStart();while(api.LS()){const s=api.LESSON[api.LS().i];api.lessonAct({l:'ans',k:String(s.o.findIndex(x=>x[1]==='good'))});api.lessonAct({l:'next'});}
   report('record','results saved',api.load().runs.some(r=>r.kind==='lesson'));els['h-prog'].onclick();els['p-name'].value='Test Student';els['p-csv'].onclick();report('record','CSV export works',/"Name","Organization","Type"/.test(global.__csv||'')&&/Test Student/.test(global.__csv||''));}
+if(want.includes('smooth')){
+  const spy=el=>{let n=0,v='';Object.defineProperty(el,'innerHTML',{get:()=>v,set:x=>{v=x;n++;},configurable:true});return ()=>n;};
+  const start=(id,tier=0)=>{global.__T=1000;const B=boot();B.api.setTier(tier);B.api.runStart(id);return B;};
+  const act=(api,r,extra={})=>api.runAct(Object.assign({r},extra));const adv=s=>{global.__T+=s;};
+  // 1) the pad isn't rebuilt on every compression
+  {const {api,els}=start('tempo');adv(1);act(api,'next');const cnt=spy(els['run-box']);for(let i=0;i<10;i++){adv(.545);act(api,'tap');}
+   report('smooth','compression pad is not rebuilt on every tap',cnt()===0,`${cnt()} rebuilds in 10 compressions`);}
+  // 2) momentum: taps right after a step change are ignored; taps on the stop panel never become breaths
+  {const {api}=start('tempo');adv(1);act(api,'next');adv(.6);for(let i=0;i<30;i++){act(api,'tap');adv(.545);}
+   const R=api.RUN();report('smooth','after 30 compressions the screen moves to breaths',R.steps[R.i].k==='breaths');
+   act(api,'over');adv(.545);act(api,'over');report('smooth','overshoot taps on the "stop" panel never count as breaths',R.st.taps.length===0&&R.errs.length===0);
+   adv(.1);act(api,'breath');report('smooth','a deliberate breath still registers',R.st.taps.length===1);}
+  {const {api}=start('adult');adv(1);for(const x of api.RUN().steps[0].items){adv(1);act(api,'seq',{x});}const R=api.RUN();adv(.25);act(api,'timer');
+   report('smooth','a tap within half a second of a new step is ignored (no accidental timer start)',R.steps[R.i].k==='timer'&&R.st.t0===null);adv(.4);act(api,'timer');report('smooth','…and works normally after that',R.st.t0!==null);}
+  // 3) feedback stays on screen after the step changes
+  {const {api,els}=start('tempo');adv(1);act(api,'next');adv(.6);for(let i=0;i<30;i++){act(api,'tap');adv(.44);}
+   report('smooth','a penalty stays visible after the step changes',/too fast/.test(els['run-now'].innerHTML),els['run-now'].innerHTML.replace(/<[^>]+>/g,''));}
+  {const {api,els}=start('tempo');adv(1);act(api,'next');adv(.6);for(let i=0;i<30;i++){act(api,'tap');adv(.545);}
+   report('smooth','good work gets positive feedback',/✓ Set 1: 110\/min · 100% in the zone/.test(els['run-now'].innerHTML));}
+  // 4) Guided coaches the rate live; Recall stays silent
+  {const {api,els}=start('tempo',0);adv(1);act(api,'next');adv(.6);for(let i=0;i<8;i++){act(api,'tap');adv(.42);}api.runAct({r:'noop'});
+   report('smooth','Guided coaches live ("Slow down a little" at ~143/min)',/Slow down/.test(els['run-coach'].textContent),els['run-coach'].textContent);}
+  {const {api,els}=start('tempo',1);adv(1);act(api,'next');adv(.6);for(let i=0;i<8;i++){act(api,'tap');adv(.42);}api.runAct({r:'noop'});
+   report('smooth','Recall gives no live coaching',els['run-coach'].textContent==='');}
+  {const {api,els}=start('adult',1);adv(1);for(const x of api.RUN().steps[0].items){adv(1);act(api,'seq',{x});}adv(1);act(api,'timer');adv(4);api.runAct({r:'noop'});
+   report('smooth','Recall hides the pulse-check seconds (count it yourself)',els['kv-a'].textContent==='…');}
+  // 5) debrief lists every step
+  {const r=play('team',0);report('smooth','debrief lists your steps',/YOUR STEPS/.test(r.detail)&&(r.detail.match(/✓/g)||[]).length>=10,((r.detail.match(/✓/g)||[]).length)+' steps shown');}
+}
 if(want.includes('fuzz')){let crashes=0;const errs=[];const R=['next','opt','seq','timer','tap','breath','rhythm','alt','quit'];
   for(let run=0;run<60;run++){global.__T=1000;const {api}=boot();api.runStart(IDS[run%IDS.length]);
     try{for(let i=0;i<800&&api.RUN();i++){global.__T+=Math.random()*3;const a=R[Math.floor(Math.random()*(R.length-(i<700?1:0)))],s=api.RUN().steps[api.RUN().i];

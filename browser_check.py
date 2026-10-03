@@ -31,19 +31,21 @@ with sync_playwright() as p:
                     k = pg.evaluate("RUN&&RUN.steps[RUN.i]?RUN.steps[RUN.i].k:null")
                     if k is None: continue
                     adv = lambda s: pg.evaluate(f"window.__t+={s}")
-                    if k == 'info' or pg.locator('[data-r="next"]').count(): adv(1); pg.click('[data-r="next"]'); continue
+                    def woke(sel):   # a person waits for a just-appeared button to be ready (the half-second guard)
+                        if 'cool' in (pg.locator(sel).first.get_attribute('class') or ''): adv(0.5); pg.wait_for_timeout(200)
+                    if k == 'info' or pg.locator('[data-r="next"]').count(): adv(1); woke('[data-r="next"]'); pg.click('[data-r="next"]'); continue
                     if k == 'choice':
                         good = pg.evaluate("(()=>{const s=RUN.steps[RUN.i];return s.o.find(o=>o[1]==='good')[0];})()")
-                        pg.locator('[data-r="opt"]', has_text=good).first.click(); continue
+                        adv(1); woke('[data-r="opt"]'); pg.locator('[data-r="opt"]', has_text=good).first.click(); continue
                     if k == 'seq':
                         want = pg.evaluate("RUN.steps[RUN.i].items[RUN.st.next]")
-                        pg.locator('[data-r="seq"]', has_text=want).first.click(); continue
-                    if k == 'timer': adv(1); pg.click('[data-r="timer"]'); adv(7); pg.click('[data-r="timer"]'); continue
-                    if k == 'tap': adv(0.545); pg.click('[data-r="tap"]'); continue
-                    if k == 'breaths': adv(1.1); pg.click('[data-r="breath"]'); continue
-                    if k == 'rhythm': adv(6); pg.click('[data-r="rhythm"]'); continue
+                        adv(1); woke('[data-r="seq"]'); pg.locator('[data-r="seq"]', has_text=want).first.click(); continue
+                    if k == 'timer': adv(1); woke('[data-r="timer"]'); pg.click('[data-r="timer"]'); adv(7); pg.click('[data-r="timer"]'); continue
+                    if k == 'tap': adv(0.545); woke('[data-r="tap"]'); pg.click('[data-r="tap"]'); continue
+                    if k == 'breaths': adv(1.1); woke('[data-r="breath"]'); pg.click('[data-r="breath"]'); continue
+                    if k == 'rhythm': adv(6); woke('[data-r="rhythm"]'); pg.click('[data-r="rhythm"]'); continue
                     if k == 'alt':
-                        x = pg.evaluate("RUN.st.inCyc<5?'a':'b'"); pg.click(f'[data-r="alt"][data-x="{x}"]'); continue
+                        x = pg.evaluate("RUN.st.inCyc<5?'a':'b'"); adv(0.6); woke(f'[data-r="alt"][data-x="{x}"]'); pg.click(f'[data-r="alt"][data-x="{x}"]'); continue
                 score = pg.text_content('#done-s') if ok else '—'
                 rows.append((w, rid + ' (full)', 0 if ok and score == '100' else 99))
         pg.goto(URL); pg.wait_for_timeout(150); pg.click('#h-exam'); pg.wait_for_timeout(150); rows.append((w, 'exam', pg.evaluate(OVER)))

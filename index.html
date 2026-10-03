@@ -66,6 +66,9 @@ textarea,input{font-family:inherit;font-size:16px;padding:10px;border-radius:8px
 .station svg{width:100%;max-width:420px;display:block;margin:0 auto}
 .meter{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--soft);margin:6px 0}.meter .bar{flex:1;height:12px}
 body.tv{max-width:1100px}@media (min-width:1000px){body.tv{zoom:1.3}}
+.cool{opacity:.45;pointer-events:none}
+.beat{animation:beat .545s infinite}@keyframes beat{0%{box-shadow:0 0 0 0 rgba(90,163,255,.55)}35%{box-shadow:0 0 0 7px rgba(90,163,255,0)}100%{box-shadow:0 0 0 0 rgba(90,163,255,0)}}
+.pad,#run-stop{touch-action:none}
 .pad{width:100%;height:150px;font-size:24px;font-family:"Saira Condensed",sans-serif;background:#13273f;border-color:var(--red2)}
 .kv{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin:6px 0}.kv div{background:#0d141c;border:1px solid var(--line);border-radius:8px;padding:6px;text-align:center}.kv b{display:block;font-family:"Saira Condensed";font-size:24px}.kv span{font-size:11px;color:var(--soft)}
 </style>
@@ -104,7 +107,7 @@ body.tv{max-width:1100px}@media (min-width:1000px){body.tv{zoom:1.3}}
 <div class="overlay hidden" id="infoov" style="z-index:15"><div class="box"><div id="info-b"></div><button class="go" id="info-close" style="width:100%;margin-top:10px">Close</button></div></div>
 <script>
 /* =================== core =================== */
-const APP_VERSION='0.2.0';
+const APP_VERSION='0.3.0';
 const $=id=>document.getElementById(id);
 const esc=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 const pick=a=>a[Math.floor(Math.random()*a.length)];
@@ -117,8 +120,9 @@ function record(kind,id,score,extra){const p=load();p.runs=(p.runs||[]).concat([
 function showHome(){['runov','lessonov','quizov','doneov'].forEach(i=>$(i).classList.add('hidden'));document.querySelectorAll('[data-tier]').forEach(b=>b.classList.toggle('on',+b.dataset.tier===TIER));$('tierhelp').textContent=['Guided: hints and coaching as you go.','Recall: no hints. Run it like the real skills test.'][TIER];}
 document.querySelectorAll('[data-tier]').forEach(b=>b.onclick=()=>{TIER=+b.dataset.tier;showHome();});
 let AGAIN=null;
-function showDone(t,score,html,again){$('done-t').textContent=t;$('done-s').textContent=score;$('done-b').innerHTML=html;AGAIN=again;$('doneov').classList.remove('hidden');}
-$('done-again').onclick=()=>{$('doneov').classList.add('hidden');if(AGAIN)AGAIN();};$('done-menu').onclick=()=>{$('doneov').classList.add('hidden');showHome();};
+let DONEGUARD=0;
+function showDone(t,score,html,again){DONEGUARD=NOW()+.7;$('done-t').textContent=t;$('done-s').textContent=score;$('done-b').innerHTML=html;AGAIN=again;$('doneov').classList.remove('hidden');}
+$('done-again').onclick=()=>{if(NOW()<DONEGUARD)return;$('doneov').classList.add('hidden');if(AGAIN)AGAIN();};$('done-menu').onclick=()=>{if(NOW()<DONEGUARD)return;$('doneov').classList.add('hidden');showHome();};
 function info(h){$('info-b').innerHTML=h;$('infoov').classList.remove('hidden');}$('info-close').onclick=()=>$('infoov').classList.add('hidden');
 /* =================== the lesson =================== */
 const LESSON=[
@@ -257,54 +261,85 @@ const DEFS={
   B(),C(30),
   {k:'info',p:'You see the candy in her mouth after the next round and flick it out. EMS arrives moments later.'},
   {k:'choice',p:'What do you tell EMS?',o:[['Choking, went unresponsive, CPR times, object removed','good'],['That she ate too much candy at the party','bad'],['That she\'s fine now — the candy is out','partial']],why:'What happened, what you did, and when. She still needs to be evaluated.'}]}};
-function runStart(id){const def=DEFS[id];RUN={id,def,steps:def.steps(),i:0,score:100,errs:[],m:{rates:[],inRange:[],pauses:[],longest:0,firstComp:null,recogEnd:null,toComp:null,pulse:[],fastBreaths:0,compEnd:null,aed:false},st:{}};$('runov').classList.remove('hidden');stepBegin();}
-function penal(p,msg){RUN.score=Math.max(0,RUN.score-p);RUN.errs.push(msg);RUN.st.fb=`<span style="color:#ff9a96">${esc(msg)}</span>`;}
-function stepBegin(){const s=RUN.steps[RUN.i];RUN.st={fb:''};if(!s){return runFinish();}
+function runStart(id){const def=DEFS[id];RUN={id,def,steps:def.steps(),i:0,score:100,errs:[],log:[],msg:null,t0:NOW(),sets:0,m:{rates:[],inRange:[],pauses:[],longest:0,firstComp:null,recogEnd:null,toComp:null,pulse:[],fastBreaths:0,compEnd:null,aed:false},st:{}};$('runov').classList.remove('hidden');stepBegin();}
+function say(html,cls){RUN.msg={html,cls};}
+function penal(p,msg){RUN.score=Math.max(0,RUN.score-p);RUN.errs.push(msg);RUN.stepErr=(RUN.stepErr||0)+1;say(esc(msg),'bad');}
+function stepBegin(){const s=RUN.steps[RUN.i];RUN.st={};RUN.stepErr=0;if(!s){return runFinish();}
+  RUN.guard=NOW()+.45;   // momentum taps from the last step can't land on this one
   if(s.k==='choice')RUN.st.ord=shuf(s.o.map((_,i)=>i)),RUN.st.tried={};
   if(s.k==='seq'){RUN.st.ord=shuf(s.items.concat(s.decoys||[]));RUN.st.next=0;}
-  if(s.k==='tap'){RUN.st.taps=[];}if(s.k==='breaths'||s.k==='rhythm'){RUN.st.taps=[];}
-  if(s.k==='alt'){RUN.st.cyc=0;RUN.st.inCyc=0;}
-  if(s.k==='timer'){RUN.st.t0=null;}
-  runRender();}
-function stepNext(){RUN.i++;stepBegin();}
+  if(s.k==='tap'||s.k==='breaths'||s.k==='rhythm')RUN.st.taps=[];
+  if(s.k==='alt'){RUN.st.cyc=0;RUN.st.inCyc=0;}if(s.k==='timer')RUN.st.t0=null;
+  runBuild();}
+const STEPNAME=s=>s.k==='seq'?(s.aed?'AED steps in order':'First actions in order'):s.k==='timer'?'Breathing and pulse check':s.k==='tap'?`${s.n} compressions`:s.k==='breaths'?'Two breaths':s.k==='rhythm'?`${s.n} breaths, one every ${s.lo<3?'2–3':'6'} seconds`:s.k==='alt'?`${s.a}s and ${s.b.toLowerCase()}s`:(s.p.split(/(?<=[.?])\s/).slice(-1)[0]||s.p).slice(0,70);
+function stepNext(detail){const s=RUN.steps[RUN.i];if(s&&s.k!=='info')RUN.log.push({name:STEPNAME(s),ok:!RUN.stepErr,detail:detail||'',at:NOW()-RUN.t0});RUN.i++;stepBegin();}
 function liveRate(t){if(t.length<3)return null;const iv=[];for(let i=Math.max(1,t.length-6);i<t.length;i++)iv.push(t[i]-t[i-1]);return Math.round(60/(iv.reduce((a,b)=>a+b,0)/iv.length));}
-function runRender(){const s=RUN.steps[RUN.i],st=RUN.st;if(!s)return;let body='',btns='';
-  const hdr=`<div style="display:flex;justify-content:space-between;align-items:center"><span class="tag">${esc(RUN.def.name)}</span><span class="stat" style="margin:0">Score ${RUN.score}${TIER===0?` · step ${RUN.i+1} of ${RUN.steps.length}`:''}</span></div>`;
-  if(s.k==='info'){btns=`<button class="go" data-r="next" style="width:100%">Continue</button>`;}
-  if(s.k==='choice'){btns=st.solved?`<button class="go" data-r="next" style="width:100%">Continue</button>`:st.ord.map(i=>`<button class="opt" data-r="opt" data-i="${i}" ${st.tried[i]?'disabled':''}>${esc(s.o[i][0])}</button>`).join('');}
-  if(s.k==='seq'){btns=`<div class="row">${st.ord.map(x=>{const k=s.items.indexOf(x);const done=k>-1&&k<st.next;return `<button data-r="seq" data-x="${esc(x)}" class="${done?'on':''}" ${done?'disabled':''}>${esc(x)}</button>`;}).join('')}</div>`;}
-  if(s.k==='timer'){const run=st.t0!==null;body=`<div class="kv"><div><b id="tm-v">${run?(NOW()-st.t0).toFixed(0):'0'}</b><span>seconds</span></div><div><b>${s.lo}–${s.hi}</b><span>target</span></div><div><b>${RUN.m.pulse.length}</b><span>checks done</span></div></div>`;btns=`<button class="pad" data-r="timer">${run?esc(s.stop):esc(s.label)}</button>`;}
-  if(s.k==='tap'){const r=liveRate(st.taps);body=`<div class="kv"><div><b>${st.taps.length}/${s.n}</b><span>compressions</span></div><div><b style="color:${r===null?'inherit':r>=100&&r<=120?'#39e36f':'#ffc23d'}">${r===null?'—':r}</b><span>rate / min</span></div><div><b id="ps-v">${RUN.m.compEnd!==null&&!st.taps.length?(NOW()-RUN.m.compEnd).toFixed(0)+' s':'—'}</b><span>pause</span></div></div>`;btns=`<button class="pad" data-r="tap">PUSH</button>`;}
-  if(s.k==='breaths'){body=`<div class="kv"><div><b>${st.taps.length}/${s.n}</b><span>breaths</span></div><div><b id="ps-v">${RUN.m.compEnd!==null?(NOW()-RUN.m.compEnd).toFixed(0)+' s':'—'}</b><span>hands off</span></div><div><b>&lt;10 s</b><span>goal</span></div></div>`;btns=`<button class="pad" data-r="breath">Give a breath</button>`;}
-  if(s.k==='rhythm'){const last=st.taps.length?NOW()-st.taps[st.taps.length-1]:null;body=`<div class="kv"><div><b>${st.taps.length}/${s.n}</b><span>breaths</span></div><div><b id="rh-v">${last===null?'—':last.toFixed(0)+' s'}</b><span>since last</span></div><div><b>~6 s</b><span>goal</span></div></div>`;btns=`<button class="pad" data-r="rhythm">${esc(s.label)}</button>`;}
-  if(s.k==='alt'){body=`<div class="kv"><div><b>${st.cyc+1}</b><span>round</span></div><div><b>${st.inCyc<5?st.inCyc:5}/5</b><span>${esc(s.a.toLowerCase())}s</span></div><div><b>${st.inCyc>5?st.inCyc-5:0}/5</b><span>${esc(s.b.toLowerCase())}s</span></div></div>`;btns=`<div class="row"><button class="pad" style="height:110px;font-size:20px" data-r="alt" data-x="a">${esc(s.a)}</button><button class="pad" style="height:110px;font-size:20px" data-r="alt" data-x="b">${esc(s.b)}</button></div>`;}
-  $('run-box').innerHTML=`${hdr}<p style="font-size:17px;margin:10px 0">${esc(s.p)}</p>${body}${btns}<p id="run-fb" style="font-size:15px;min-height:22px;margin:8px 0 0">${st.fb||''}</p><button data-r="quit" style="width:100%;margin-top:8px">Stop and go back</button>`;}
+/* Build the step's screen ONCE. Everything that changes while you work is updated in place by runUpd(). */
+function runBuild(){const s=RUN.steps[RUN.i],st=RUN.st;if(!s)return;let body='',btns='';const pad=(a,label,extra='')=>`<button class="pad cool${TIER===0&&a==='tap'?' beat':''}" id="run-pad" data-r="${a}" ${extra}>${esc(label)}</button>`;
+  if(s.k==='info')btns=`<button class="go cool" id="run-pad" data-r="next" style="width:100%">Continue</button>`;
+  if(s.k==='choice')btns=st.solved?`<button class="go cool" id="run-pad" data-r="next" style="width:100%">Continue</button>`:st.ord.map(i=>`<button class="opt${st.built?'':' cool'}" data-r="opt" data-i="${i}" ${st.tried[i]?'disabled':''}>${esc(s.o[i][0])}</button>`).join('');
+  if(s.k==='seq')btns=`<div class="row">${st.ord.map(x=>{const k=s.items.indexOf(x);const done=k>-1&&k<st.next;return `<button data-r="seq" data-x="${esc(x)}" class="${done?'on':st.built?'':'cool'}" ${done?'disabled':''}>${done?'✓ ':''}${esc(x)}</button>`;}).join('')}</div>`;
+  if(s.k==='timer'){body=`<div class="kv"><div><b id="kv-a">${TIER===0?'0':'—'}</b><span>${TIER===0?'seconds':'count it yourself'}</span></div><div><b>${s.lo}–${s.hi}</b><span>target</span></div><div><b>${RUN.m.pulse.length}</b><span>checks done</span></div></div>`;btns=pad('timer',s.label);}
+  if(s.k==='tap'){body=`<div class="kv"><div><b id="kv-a">0/${s.n}</b><span>compressions</span></div><div><b id="kv-b">—</b><span>rate / min</span></div><div><b id="kv-c">—</b><span>${RUN.m.compEnd!==null?'hands off':'pause'}</span></div></div>`;btns=pad('tap','PUSH');}
+  if(s.k==='breaths'){body=`<div class="kv"><div><b id="kv-a">0/${s.n}</b><span>breaths</span></div><div><b id="kv-c">—</b><span>hands off</span></div><div><b>&lt;10 s</b><span>goal</span></div></div>`;
+    // Where the PUSH pad was: an inert 'stop' panel that soaks up momentum taps. The breath button sits lower — you move to the head.
+    btns=`<div id="run-stop" data-r="over" style="height:150px;border:2px dashed var(--line);border-radius:10px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--soft);font-family:'Saira Condensed',sans-serif;font-size:24px;text-align:center;line-height:1.2">${RUN.steps[RUN.i-1]&&RUN.steps[RUN.i-1].k==='tap'?RUN.steps[RUN.i-1].n+' ✓':'Hands off'}<span style="font-family:inherit;font-size:16px">stop — move to the airway</span></div><button class="pad cool" id="run-pad" data-r="breath" style="height:90px;margin-top:14px;background:#14324f">Give a breath</button>`;}
+  if(s.k==='rhythm'){body=`<div class="kv"><div><b id="kv-a">0/${s.n}</b><span>breaths</span></div><div><b id="kv-b">—</b><span>since last</span></div><div><b>~6 s</b><span>goal</span></div></div>`;btns=pad('rhythm',s.label);}
+  if(s.k==='alt'){body=`<div class="kv"><div><b id="kv-a">1</b><span>round</span></div><div><b id="kv-b">0/5</b><span>${esc(s.a.toLowerCase())}s</span></div><div><b id="kv-c">0/5</b><span>${esc(s.b.toLowerCase())}s</span></div></div>`;btns=`<div class="row"><button class="pad cool" id="run-pad" style="height:110px;font-size:20px" data-r="alt" data-x="a">${esc(s.a)}</button><button class="pad cool" id="run-pad2" style="height:110px;font-size:20px" data-r="alt" data-x="b">${esc(s.b)}</button></div>`;}
+  st.built=true;
+  $('run-box').innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><span class="tag">${esc(RUN.def.name)}</span><span class="stat" style="margin:0">Score <b id="run-score">${RUN.score}</b></span></div>
+   <div class="bar" style="height:6px;margin:8px 0 10px"><div id="run-prog" style="width:${Math.round(RUN.i/RUN.steps.length*100)}%;background:var(--red2)"></div></div>
+   <div id="run-now" style="font-size:15px;line-height:1.4;min-height:22px;margin-bottom:8px"></div>
+   <p id="run-p" style="font-size:17px;margin:0 0 10px">${esc(s.p)}</p>${body}${btns}
+   <p id="run-coach" style="font-size:16px;font-weight:700;text-align:center;min-height:22px;margin:8px 0 0"></p>
+   <button data-r="quit" style="width:100%;margin-top:8px">Stop and go back</button>`;
+  runUpd();}
+function runUpd(){if(!RUN)return;const s=RUN.steps[RUN.i],st=RUN.st;if(!s)return;const t=NOW(),m=RUN.m,set=(id,v)=>{const e=$(id);if(e&&e.textContent!==String(v))e.textContent=v;};
+  set('run-score',RUN.score);
+  const nowEl=$('run-now');if(nowEl){const h=RUN.msg?`<span style="color:${RUN.msg.cls==='bad'?'#ff9a96':RUN.msg.cls==='good'?'#7fe3a4':'var(--soft)'}">${RUN.msg.html}</span>`:'';if(nowEl._h!==h){nowEl.innerHTML=h;nowEl._h=h;}}
+  const cool=t<RUN.guard;document.querySelectorAll&&document.querySelectorAll('#run-box .cool').forEach(b=>{if(!cool)b.classList.remove('cool');});
+  let coach='',col='';
+  if(s.k==='timer'&&st.t0!==null){const d=t-st.t0;set('kv-a',TIER===0?d.toFixed(0):'…');const e=$('kv-a');if(e)e.style.color=d>s.hi?'#ff9a96':d>=s.lo?'#39e36f':'';}
+  if(s.k==='tap'){set('kv-a',`${st.taps.length}/${s.n}`);const r=liveRate(st.taps);set('kv-b',r===null?'—':r);const e=$('kv-b');if(e)e.style.color=r===null?'':r>=100&&r<=120?'#39e36f':'#ffc23d';
+    if(!st.taps.length&&m.compEnd!==null){const p=t-m.compEnd;set('kv-c',p.toFixed(0)+' s');const c=$('kv-c');if(c)c.style.color=p>10?'#ff9a96':'';}else if(st.taps.length)set('kv-c','—');
+    if(TIER===0&&r!==null){coach=r>120?'Slow down a little':r<100?'Push faster':'Good rate — keep it';col=r>=100&&r<=120?'#39e36f':'#ffc23d';}}
+  if(s.k==='breaths'){set('kv-a',`${st.taps.length}/${s.n}`);if(m.compEnd!==null){const p=t-m.compEnd;set('kv-c',p.toFixed(0)+' s');const c=$('kv-c');if(c)c.style.color=p>10?'#ff9a96':'';}}
+  if(s.k==='rhythm'){set('kv-a',`${st.taps.length}/${s.n}`);if(st.taps.length){const d=t-st.taps[st.taps.length-1];set('kv-b',d.toFixed(0)+' s');const pad=$('run-pad');if(pad&&TIER===0)pad.classList.toggle('hot',d>=s.lo+.5);if(TIER===0){coach=d>=s.lo+.5?'Breathe now':'…wait…';col=d>=s.lo+.5?'#39e36f':'var(--soft)';}}}
+  if(s.k==='alt'){set('kv-a',st.cyc+1);set('kv-b',`${Math.min(5,st.inCyc)}/5`);set('kv-c',`${st.inCyc>5?st.inCyc-5:0}/5`);if(TIER===0){coach=st.inCyc<5?`Next: ${s.a.toLowerCase()}`:`Next: ${s.b.toLowerCase()}`;}}
+  const ce=$('run-coach');if(ce){set('run-coach',coach);ce.style.color=col;}}
 function runAct(ds){if(!RUN)return;const s=RUN.steps[RUN.i],st=RUN.st,a=ds.r,t=NOW(),m=RUN.m;
   if(a==='quit'){$('runov').classList.add('hidden');RUN=null;return;}
+  if(t<RUN.guard&&a!=='over')return;     // ignore momentum taps for half a second after a step changes
   if(a==='next'){stepNext();return;}
-  if(s.k==='choice'&&a==='opt'){const o=s.o[+ds.i];if(o[1]==='good'){st.solved=true;st.fb=`<span style="color:#7fe3a4"><b>Right.</b></span> ${esc(s.why)}`;}else{st.tried[+ds.i]=1;penal(o[1]==='partial'?5:10,o[1]==='partial'?'Not the best choice — try again.':'No — try again.');if(TIER===0)st.fb+=` <span style="color:var(--soft)">${esc(s.why)}</span>`;}}
-  if(s.k==='seq'&&a==='seq'){const want=s.items[st.next];if(ds.x===want){st.next++;st.fb='';if(st.next>=s.items.length){if(s.aed)m.aed=true;stepNext();return;}}else penal(5,TIER===0?`Not yet. Next: ${want}.`:'Out of order.');}
-  if(s.k==='timer'&&a==='timer'){if(st.t0===null){st.t0=t;}else{const d=t-st.t0;m.pulse.push(d);if(d<s.lo)penal(5,`Only ${d.toFixed(0)} seconds — take at least ${s.lo}.`);else if(d>s.hi+.5)penal(5,`${d.toFixed(0)} seconds — never more than ${s.hi}.`);if(s.recog)m.recogEnd=t;stepNext();return;}}
-  if(s.k==='tap'&&a==='tap'){if(!st.taps.length){if(m.firstComp===null){m.firstComp=t;if(m.recogEnd!==null){m.toComp=t-m.recogEnd;if(m.toComp>10)penal(5,`${m.toComp.toFixed(0)} seconds from recognizing arrest to the first compression — start within 10.`);}}
-      if(m.compEnd!==null){const p=t-m.compEnd;if(!m.aed){m.pauses.push(p);m.longest=Math.max(m.longest,p);if(p>10)penal(5,`Hands off for ${p.toFixed(0)} seconds — keep pauses under 10.`);}m.aed=false;}}
+  if(s.k==='choice'&&a==='opt'){const o=s.o[+ds.i];if(st.tried[+ds.i])return;if(o[1]==='good'){st.solved=true;say(`<b>Right.</b> ${esc(s.why)}`,'good');}else{st.tried[+ds.i]=1;penal(o[1]==='partial'?5:10,o[1]==='partial'?'Not the best choice — try again.':'No — try again.');if(TIER===0)RUN.msg.html+=` <span style="color:var(--soft)">${esc(s.why)}</span>`;}runBuild();return;}
+  if(s.k==='seq'&&a==='seq'){const want=s.items[st.next];if(ds.x===want){st.next++;if(st.next>=s.items.length){if(s.aed)m.aed=true;if(!RUN.stepErr)say(`✓ ${s.aed?'AED run in order.':'In order.'}`,'good');stepNext(RUN.stepErr?'out of order':'in order');return;}}else penal(5,TIER===0?`Not yet. Next: ${want}.`:'Out of order.');runBuild();return;}
+  if(s.k==='timer'&&a==='timer'){if(st.t0===null){st.t0=t;const p=$('run-pad');if(p)p.textContent=s.stop;say('Checking… count it out.','');runUpd();return;}const d=t-st.t0;m.pulse.push(d);
+    if(d<s.lo)penal(5,`Only ${d.toFixed(0)} seconds — take at least ${s.lo}.`);else if(d>s.hi+.5)penal(5,`${d.toFixed(0)} seconds — never more than ${s.hi}.`);else say(`✓ Checked for ${d.toFixed(0)} seconds.`,'good');
+    if(s.recog)m.recogEnd=t;stepNext(d.toFixed(0)+' s');return;}
+  if(s.k==='tap'&&a==='tap'){if(navigator.vibrate)try{navigator.vibrate(8);}catch(e){}
+    if(!st.taps.length){if(m.firstComp===null){m.firstComp=t;if(m.recogEnd!==null){m.toComp=t-m.recogEnd;if(m.toComp>10)penal(5,`${m.toComp.toFixed(0)} seconds from recognizing arrest to the first compression — start within 10.`);}}
+      if(m.compEnd!==null){const p=t-m.compEnd;if(!m.aed){m.pauses.push(p);m.longest=Math.max(m.longest,p);if(p>10)penal(5,`Hands off for ${p.toFixed(0)} seconds — keep pauses under 10.`);else say(`✓ Back on the chest — hands off ${p.toFixed(1)} s.`,'good');}else say('✓ Back on the chest.','good');m.aed=false;}}
     st.taps.push(t);if(st.taps.length>=s.n){const iv=[];for(let i=1;i<st.taps.length;i++)iv.push(st.taps[i]-st.taps[i-1]);const W=Math.min(5,iv.length),rates=[];for(let i=W-1;i<iv.length;i++){let sum=0;for(let k=i-W+1;k<=i;k++)sum+=iv[k];rates.push(60/(sum/W));}const inR=rates.filter(r=>r>=100&&r<=120).length/rates.length;const avg=60/(iv.reduce((a,b)=>a+b,0)/iv.length);
-      m.rates.push(avg);m.inRange.push(inR);if(inR<.5)penal(10,`Rate was ${Math.round(avg)} a minute — only ${Math.round(inR*100)}% of compressions in the 100–120 zone.`);else if(inR<.75)penal(5,`Rate ${Math.round(avg)} — ${Math.round(inR*100)}% in the zone. Aim for steadier.`);
-      m.compEnd=t;stepNext();return;}}
-  if(s.k==='breaths'&&a==='breath'){if(st.taps.length&&t-st.taps[st.taps.length-1]<.8){m.fastBreaths++;penal(3,'Too fast — each breath takes about 1 second.');}st.taps.push(t);if(st.taps.length>=s.n){stepNext();return;}}
-  if(s.k==='rhythm'&&a==='rhythm'){if(st.taps.length){const d=t-st.taps[st.taps.length-1];if(d<s.lo)penal(3,`${d.toFixed(1)} seconds — too fast. One every 6 seconds.`);else if(d>s.hi)penal(3,`${d.toFixed(1)} seconds — too slow. One every 6 seconds.`);else st.fb='<span style="color:#7fe3a4">Good timing.</span>';}
-    st.taps.push(t);if(st.taps.length>=s.n){stepNext();return;}}
+      m.rates.push(avg);m.inRange.push(inR);RUN.sets++;const head=`Set ${RUN.sets}: ${Math.round(avg)}/min · ${Math.round(inR*100)}% in the zone`;
+      if(inR<.5)penal(10,`${head} — ${avg>120?'too fast':'too slow'}.`);else if(inR<.75)penal(5,`${head} — aim for steadier.`);else say(`✓ ${head}.`,'good');
+      m.compEnd=t;stepNext(`${Math.round(avg)}/min, ${Math.round(inR*100)}% in zone`);return;}runUpd();return;}
+  if(s.k==='breaths'&&a==='over'){st.over=(st.over||0)+1;if(TIER===0&&st.over===1)say('That\'s past the count — stop at the number, then breathe.','');runUpd();return;}
+  if(s.k==='breaths'&&a==='breath'){if(st.taps.length&&t-st.taps[st.taps.length-1]<.8){m.fastBreaths++;penal(3,'Too fast — each breath takes about 1 second.');}else say(`Breath ${st.taps.length+1}${st.taps.length+1<s.n?'…':' — now back on the chest.'}`,'');st.taps.push(t);if(st.taps.length>=s.n){stepNext();return;}runUpd();return;}
+  if(s.k==='rhythm'&&a==='rhythm'){if(st.taps.length){const d=t-st.taps[st.taps.length-1];if(d<s.lo)penal(3,`${d.toFixed(1)} seconds — too fast. One every 6 seconds.`);else if(d>s.hi)penal(3,`${d.toFixed(1)} seconds — too slow. One every 6 seconds.`);else say(`✓ ${d.toFixed(1)} seconds — good timing.`,'good');}else say('First breath in. Now count…','');
+    st.taps.push(t);if(st.taps.length>=s.n){stepNext();return;}runUpd();return;}
   if(s.k==='alt'&&a==='alt'){const want=st.inCyc<5?'a':'b';if(ds.x!==want){penal(5,want==='a'?`Finish 5 ${s.a.toLowerCase()}s first.`:`Now 5 ${s.b.toLowerCase()}s.`);}
-    else{st.inCyc++;st.fb='';if(st.inCyc>=10){st.cyc++;st.inCyc=0;if(st.cyc>=(s.limit||s.out)){stepNext();return;}}else if(st.cyc+1>=s.out&&st.inCyc===(s.out%2?7:3)&&!s.limit){stepNext();return;}}}
-  runRender();}
-function runTick(){if(!RUN)return;const s=RUN.steps[RUN.i];if(!s)return;const t=NOW();
-  if(s.k==='timer'&&RUN.st.t0!==null&&$('tm-v'))$('tm-v').textContent=(t-RUN.st.t0).toFixed(0);
-  if((s.k==='tap'&&!RUN.st.taps.length||s.k==='breaths')&&RUN.m.compEnd!==null&&$('ps-v')){const p=t-RUN.m.compEnd;$('ps-v').textContent=p.toFixed(0)+' s';$('ps-v').style.color=p>10?'#ff9a96':'';}
-  if(s.k==='rhythm'&&RUN.st.taps.length&&$('rh-v'))$('rh-v').textContent=(t-RUN.st.taps[RUN.st.taps.length-1]).toFixed(0)+' s';}
+    else{st.inCyc++;if(st.inCyc>=10){st.cyc++;st.inCyc=0;if(st.cyc>=(s.limit||s.out)){stepNext(`${st.cyc} round${st.cyc>1?'s':''}`);return;}}else if(st.cyc+1>=s.out&&st.inCyc===(s.out%2?7:3)&&!s.limit){say('✓ It\'s out!','good');stepNext(`cleared in round ${st.cyc+1}`);return;}}runUpd();return;}
+  runUpd();}
+function runTick(){if(RUN)runUpd();}
 function runFinish(){const m=RUN.m,def=RUN.def,id=RUN.id;const avg=m.rates.length?Math.round(m.rates.reduce((a,b)=>a+b,0)/m.rates.length):null,inR=m.inRange.length?Math.round(m.inRange.reduce((a,b)=>a+b,0)/m.inRange.length*100):null;
   const rows=[...(avg!==null?[['Average compression rate',avg+' / min (100–120)'],['Compressions in the zone',inR+'%']]:[]),...(m.pauses.length?[['Longest hands-off pause',m.longest.toFixed(1)+' s (under 10)']]:[]),...(m.toComp!==null?[['Recognition to first compression',m.toComp.toFixed(1)+' s (within 10)']]:[]),...(m.pulse.length?[['Pulse checks',m.pulse.map(x=>x.toFixed(0)+' s').join(', ')+' (5–10)']]:[])];
-  const score=RUN.score,errs=RUN.errs.slice();record(def.scen?'scenario':'station',id,score);$('runov').classList.add('hidden');RUN=null;
-  showDone(def.name,score,`${rows.length?`<div>${rows.map(([a,b])=>`<div class="mrow"><span>${a}</span><b style="text-align:right">${esc(b)}</b></div>`).join('')}</div>`:''}${errs.length?`<p style="font-size:14px;margin-top:8px"><b>Feedback:</b> ${errs.map(esc).join(' · ')}</p>`:'<p style="font-size:14px;color:var(--soft);margin-top:8px">Clean run.</p>'}`,()=>runStart(id));}
-$('run-box').onclick=e=>{const b=e.target.closest&&e.target.closest('[data-r]');if(b)runAct(b.dataset);};
+  const score=RUN.score,errs=RUN.errs.slice(),log=RUN.log.slice();record(def.scen?'scenario':'station',id,score);$('runov').classList.add('hidden');RUN=null;
+  const mm=x=>Math.floor(x/60)+':'+String(Math.floor(x%60)).padStart(2,'0');
+  const steps=`<div class="sec" style="margin-top:12px">YOUR STEPS</div>${log.map(l=>`<div class="mrow"><span>${l.ok?'<b style="color:#7fe3a4">✓</b>':'<b style="color:#ffc23d">⚠</b>'} ${esc(l.name)}${l.detail?` <span style="color:var(--soft)">· ${esc(l.detail)}</span>`:''}</span><b style="white-space:nowrap">${mm(l.at)}</b></div>`).join('')}`;
+  showDone(def.name,score,`${rows.length?`<div>${rows.map(([a,b])=>`<div class="mrow"><span>${a}</span><b style="text-align:right">${esc(b)}</b></div>`).join('')}</div>`:''}${errs.length?`<p style="font-size:14px;margin-top:8px"><b>Feedback:</b> ${errs.map(esc).join(' · ')}</p>`:'<p style="font-size:14px;color:var(--soft);margin-top:8px">Clean run.</p>'}${steps}`,()=>runStart(id));}
+const PADACTS={tap:1,breath:1,rhythm:1,alt:1,over:1};
+$('run-box').onpointerdown=e=>{const b=e.target.closest&&e.target.closest('[data-r]');if(b&&PADACTS[b.dataset.r]){e.preventDefault();runAct(b.dataset);}};
+$('run-box').onclick=e=>{const b=e.target.closest&&e.target.closest('[data-r]');if(b&&!PADACTS[b.dataset.r])runAct(b.dataset);};
 document.querySelectorAll('[data-run]').forEach(b=>b.onclick=()=>runStart(b.dataset.run));
 /* =================== exam practice + drills =================== */
 const EXAM=[
@@ -364,7 +399,7 @@ $('h-prog').onclick=()=>{const p=load();const R=p.runs||[];const best=(k,id)=>{c
     const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='bls-ready-practice-record.csv';a.click();}catch(e){}};};
 /* =================== boot =================== */
 if('serviceWorker' in navigator&&location.protocol==='https:')window.addEventListener('load',()=>navigator.serviceWorker.register('sw.js').catch(()=>{}));
-showHome();setInterval(runTick,200);
+showHome();setInterval(runTick,150);
 </script>
 </body>
 </html>
