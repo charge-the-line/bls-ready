@@ -30,7 +30,16 @@
 </script>
 
 <title>BLS Ready</title>
-<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=Saira+Condensed:wght@500;600;700&display=swap" rel="stylesheet">
+<style>
+/* Fonts are served from this site (fonts/, SIL Open Font License). Nothing loads from Google: works offline and makes no outside request. */
+@font-face{font-family:"Atkinson Hyperlegible";font-style:normal;font-weight:400;font-display:swap;src:url(fonts/atkinson-hyperlegible-latin-400-normal.woff2) format("woff2")}
+@font-face{font-family:"Atkinson Hyperlegible";font-style:normal;font-weight:700;font-display:swap;src:url(fonts/atkinson-hyperlegible-latin-700-normal.woff2) format("woff2")}
+@font-face{font-family:"Saira Condensed";font-style:normal;font-weight:500;font-display:swap;src:url(fonts/saira-condensed-latin-500-normal.woff2) format("woff2")}
+@font-face{font-family:"Saira Condensed";font-style:normal;font-weight:600;font-display:swap;src:url(fonts/saira-condensed-latin-600-normal.woff2) format("woff2")}
+@font-face{font-family:"Saira Condensed";font-style:normal;font-weight:700;font-display:swap;src:url(fonts/saira-condensed-latin-700-normal.woff2) format("woff2")}
+/* Milestone 1: every button is at least 48 px tall (finger-sized, gloves on). */
+button{min-height:48px}
+</style>
 <style>
 :root{--bg:#111820;--deck:#18222e;--deck2:#22303f;--line:#34485e;--ink:#f2f6fa;--soft:#aebdcc;--red:#2f80ed;--red2:#5aa3ff;--alarm:#e5383b;--green:#39e36f;--amber:#ffc23d;--blue:#6fd3ff}
 *{box-sizing:border-box}
@@ -127,7 +136,15 @@ body.tv{max-width:1100px}@media (min-width:1000px){body.tv{zoom:1.3}}
 <div class="overlay hidden" id="infoov" style="z-index:15"><div class="box"><div id="info-b"></div><button class="go" id="info-close" style="width:100%;margin-top:10px">Close</button></div></div>
 <script>
 /* =================== core =================== */
-const APP_VERSION='0.4.0';
+const APP_VERSION='0.5.0';
+/* Screen wake lock (Milestone 1): keeps the phone from dimming or locking during a timed skill.
+   On only while an activity runs: keepAwake(true) when it starts, keepAwake(false) back at the menu or on the result screen. */
+const WAKE={s:null,want:false};
+function keepAwake(on){WAKE.want=!!on;const wl=(typeof navigator!=='undefined')&&navigator.wakeLock;if(!wl||!wl.request)return;
+  if(on){if(WAKE.s)return;try{wl.request('screen').then(s=>{WAKE.s=s;if(s.addEventListener)s.addEventListener('release',()=>{if(WAKE.s===s)WAKE.s=null;});}).catch(()=>{});}catch(e){}}
+  else if(WAKE.s){const s=WAKE.s;WAKE.s=null;try{Promise.resolve(s.release&&s.release()).catch(()=>{});}catch(e){}}}
+if(typeof document!=='undefined'&&document.addEventListener)document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'&&WAKE.want&&!WAKE.s)keepAwake(true);});
+
 const $=id=>document.getElementById(id);
 const esc=t=>String(t).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
 const pick=a=>a[Math.floor(Math.random()*a.length)];
@@ -138,11 +155,11 @@ const KEY='bls-ready';
 function load(){try{return JSON.parse(localStorage.getItem(KEY))||{runs:[]};}catch(e){return {runs:[]};}}
 function save(p){try{localStorage.setItem(KEY,JSON.stringify(p));}catch(e){}}
 function record(kind,id,score,extra){const p=load();p.runs=(p.runs||[]).concat([Object.assign({kind,id,score,d:new Date().toISOString(),tier:TIER},extra||{})]).slice(-500);save(p);}
-function showHome(){['runov','lessonov','quizov','doneov'].forEach(i=>$(i).classList.add('hidden'));document.querySelectorAll('[data-tier]').forEach(b=>b.classList.toggle('on',+b.dataset.tier===TIER));$('tierhelp').textContent=['Guided: hints and coaching as you go.','Recall: no hints. Run it like the real skills test.'][TIER];}
+function showHome(){keepAwake(false);['runov','lessonov','quizov','doneov'].forEach(i=>$(i).classList.add('hidden'));document.querySelectorAll('[data-tier]').forEach(b=>b.classList.toggle('on',+b.dataset.tier===TIER));$('tierhelp').textContent=['Guided: hints and coaching as you go.','Recall: no hints. Run it like the real skills test.'][TIER];}
 document.querySelectorAll('[data-tier]').forEach(b=>b.onclick=()=>{TIER=+b.dataset.tier;showHome();});
 let AGAIN=null;
 let DONEGUARD=0;
-function showDone(t,score,html,again){DONEGUARD=NOW()+.7;$('done-t').textContent=t;$('done-s').textContent=score;$('done-b').innerHTML=html;AGAIN=again;$('doneov').classList.remove('hidden');}
+function showDone(t,score,html,again){keepAwake(false);DONEGUARD=NOW()+.7;$('done-t').textContent=t;$('done-s').textContent=score;$('done-b').innerHTML=html;AGAIN=again;$('doneov').classList.remove('hidden');}
 $('done-again').onclick=()=>{if(NOW()<DONEGUARD)return;$('doneov').classList.add('hidden');if(AGAIN)AGAIN();};$('done-menu').onclick=()=>{if(NOW()<DONEGUARD)return;$('doneov').classList.add('hidden');showHome();};
 function info(h){$('info-b').innerHTML=h;$('infoov').classList.remove('hidden');}$('info-close').onclick=()=>$('infoov').classList.add('hidden');
 /* =================== the lesson =================== */
@@ -176,7 +193,7 @@ const LESSON=[
  {t:'Choking — 2025 change',pts:['Adult or child who can\'t cough, speak, or breathe: 5 back blows, then 5 abdominal thrusts. Repeat.','Infant: 5 back blows, then 5 chest thrusts. Repeat. Never abdominal thrusts on an infant.','If they become unresponsive: call for help and start CPR. Look in the mouth before breaths — remove an object only if you can see it. No blind finger sweeps.'],
   q:'An adult is choking and can\'t speak. What\'s the 2025 sequence?',o:[['5 back blows, then 5 abdominal thrusts','good'],['Abdominal thrusts only, until it comes out','bad'],['5 chest thrusts, then a finger sweep','bad']],why:'2025 added back blows first for adults and children, alternating with abdominal thrusts.'}];
 let LS=null;
-function lessonStart(){pca('begin','bls','lesson',()=>LS?`slide-${LS.i+1}`:'');LS={i:0,first:{},answered:false};$('lessonov').classList.remove('hidden');lessonRender();}
+function lessonStart(){keepAwake(true);pca('begin','bls','lesson',()=>LS?`slide-${LS.i+1}`:'');LS={i:0,first:{},answered:false};$('lessonov').classList.remove('hidden');lessonRender();}
 function lessonRender(){const s=LESSON[LS.i];LS.answered=false;LS.ord=shuf(s.o.map((o,k)=>k));
   $('lesson-box').innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><span class="tag">Lesson · ${LS.i+1} of ${LESSON.length}</span><button data-l="tv" style="padding:6px 10px;font-size:13px">${document.body.classList.contains('tv')?'Phone view':'Big-screen view'}</button></div>
    <h2>${esc(s.t)}</h2><ul>${s.pts.map(x=>`<li>${x.startsWith('2025')?'<b style="color:#ffc23d">2025:</b> '+esc(x.slice(5).replace(/^: /,'')):esc(x)}</li>`).join('')}</ul>
@@ -282,7 +299,7 @@ const DEFS={
   B(),C(30),
   {k:'info',p:'You see the candy in her mouth after the next round and flick it out. EMS arrives moments later.'},
   {k:'choice',p:'What do you tell EMS?',o:[['Choking, went unresponsive, CPR times, object removed','good'],['That she ate too much candy at the party','bad'],['That she\'s fine now — the candy is out','partial']],why:'What happened, what you did, and when. She still needs to be evaluated.'}]}};
-function runStart(id){const def=DEFS[id];pca('begin','bls',id,()=>RUN&&RUN.steps[RUN.i]?`step-${RUN.i+1}-${RUN.steps[RUN.i].k}`:'');RUN={id,def,steps:def.steps(),i:0,score:100,errs:[],log:[],msg:null,t0:NOW(),sets:0,m:{rates:[],inRange:[],pauses:[],longest:0,firstComp:null,recogEnd:null,toComp:null,pulse:[],fastBreaths:0,compEnd:null,aed:false},st:{}};$('runov').classList.remove('hidden');stepBegin();}
+function runStart(id){keepAwake(true);const def=DEFS[id];pca('begin','bls',id,()=>RUN&&RUN.steps[RUN.i]?`step-${RUN.i+1}-${RUN.steps[RUN.i].k}`:'');RUN={id,def,steps:def.steps(),i:0,score:100,errs:[],log:[],msg:null,t0:NOW(),sets:0,m:{rates:[],inRange:[],pauses:[],longest:0,firstComp:null,recogEnd:null,toComp:null,pulse:[],fastBreaths:0,compEnd:null,aed:false},st:{}};$('runov').classList.remove('hidden');stepBegin();}
 function say(html,cls){RUN.msg={html,cls};}
 function penal(p,msg){RUN.score=Math.max(0,RUN.score-p);RUN.errs.push(msg);RUN.stepErr=(RUN.stepErr||0)+1;say(esc(msg),'bad');}
 function stepBegin(){const s=RUN.steps[RUN.i];RUN.st={};RUN.stepErr=0;if(!s){return runFinish();}
@@ -393,7 +410,7 @@ const DRILLS={
  ages:{name:'Adult vs. child vs. infant',bank:()=>EXAM.filter((_,i)=>[2,4,6,11,12,15,18,20].includes(i))},
  choke:{name:'Choking by age',bank:()=>[['Adult can\'t speak or cough. First?','5 back blows',['5 chest thrusts','A blind finger sweep'],'2025: back blows first for adults and children.'],['Infant can\'t cry or cough. After 5 back blows?','5 chest thrusts',['5 abdominal thrusts','A blind finger sweep'],'Infants: chest thrusts, never abdominal thrusts.'],['Child can\'t speak. After 5 back blows?','5 abdominal thrusts',['5 chest thrusts','Wait for coughing'],'Children: alternate back blows and abdominal thrusts.'],['Adult is coughing forcefully. What do you do?','Encourage coughing, stay close',['Start back blows now','Start abdominal thrusts'],'A forceful cough is moving air. Watch closely and be ready.'],['Victim goes unresponsive. Before breaths?','Look in the mouth',['Do a finger sweep','Give abdominal thrusts'],'Look; remove only what you can see.']].map(([q,a,d,why])=>({q,a,d,why}))}};
 let QZ=null;
-function quizStart(name,bank,n,kind,id){pca('begin','bls',kind==='exam'?'exam':'drill-'+id,()=>QZ&&QZ.qs?`question-${QZ.i+1}`:'');const qs=shuf(bank).slice(0,n).map(x=>Object.assign({},x,{ord:shuf([x.a,...x.d])}));QZ={name,qs,i:0,right:0,kind,id};$('quizov').classList.remove('hidden');quizQ();}
+function quizStart(name,bank,n,kind,id){keepAwake(true);pca('begin','bls',kind==='exam'?'exam':'drill-'+id,()=>QZ&&QZ.qs?`question-${QZ.i+1}`:'');const qs=shuf(bank).slice(0,n).map(x=>Object.assign({},x,{ord:shuf([x.a,...x.d])}));QZ={name,qs,i:0,right:0,kind,id};$('quizov').classList.remove('hidden');quizQ();}
 function quizQ(){const q=QZ.qs[QZ.i];$('qz-title').textContent=QZ.name;$('qz-meta').textContent=`${QZ.i+1} of ${QZ.qs.length} · ${QZ.right} right`;
   $('qz-body').innerHTML=`<p style="font-size:18px;margin:0 0 10px">${esc(q.q)}</p>${q.ord.map((o,i)=>`<button class="opt" data-q="ans" data-i="${i}">${esc(o)}</button>`).join('')}<p id="qz-fb" style="font-size:15px"></p>`;$('qz-foot').innerHTML='<button data-q="quit" style="width:100%">Quit</button>';}
 function quizAct(ds){const a=ds.q;if(a==='quit'){pca('abandon');$('quizov').classList.add('hidden');QZ=null;return;}

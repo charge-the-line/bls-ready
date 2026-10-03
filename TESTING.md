@@ -59,3 +59,10 @@ Verified to catch planted bugs: two-finger technique marked correct, long pauses
 - `DEFS`: every station and scenario as a list of steps. Step types: `info`, `choice`, `seq`, `timer`, `tap`, `breaths`, `rhythm`, `alt`.
 - `runStart`/`runAct`/`runRender`: the step engine, with scoring and metrics (rate, time in zone, pauses, time to first compression, pulse-check durations).
 - `EXAM` and `DRILLS`: question banks; plus reference, About, and progress/CSV.
+
+## Milestone 1 checks (added October 2026)
+
+Foundation fixes: fonts served from this site, screen wake lock, finger-sized buttons. The `syntax` section (the hub: the plain list) now also proves:
+- Fonts self-hosted in `fonts/`, no Google reference, every file in the cache list.
+- Screen wake lock: requested when a lesson, station, scenario, or quiz starts, released at home or on the result screen.
+- Browser check: any visible button under 44 px tall fails the screen.
