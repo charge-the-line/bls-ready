@@ -129,5 +129,8 @@ Each of these cost a real bug. Don't relearn them.
 ## Tests
 `node tests/run_all.js` (55 checks): includes the 2025 content checks, balance, clean runs, ten kinds of mistakes caught, human jitter tolerance, quiz, records, smoothness, fuzz. Bots run on a controllable clock (`global.__T`). `python3 tests/browser_check.py` **plays all 10 activities to the end with real taps** on buttons found by their visible text. Required before release.
 
+## Repo housekeeping (done October 3, 2026)
+When this repo was created, the test files were uploaded flat at the root. On October 3, 2026 (approved by Max) they were moved into `tests/` with `git mv`, so `node tests/run_all.js` works in place as TESTING.md describes. Nothing left to clean up here.
+
 ## Open items
 After Max's instructor course, compare the lesson's order and wording with the official 2025 course and adjust anything AHA teaches differently.
