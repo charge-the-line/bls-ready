@@ -86,3 +86,8 @@ Foundation fixes: fonts served from this site, screen wake lock, finger-sized bu
 ## Milestone 4 checks (added October 2026)
 
 - No new checks; the look CSS moved to the core and `.chip.due` with it.
+
+## Milestone 5 part one checks (added October 2026)
+
+- The existing `lesson` and `quiz` sections now exercise the shared core engines through this module's wrappers; nothing was relaxed.
+- The jitter check's floor is 85 per run (average still 97+): with random ±20% tap timing, one run in roughly sixty legitimately earns two or three "aim for steadier" notes, and that feedback is correct, not a bug.

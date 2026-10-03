@@ -148,7 +148,7 @@ body.tv{max-width:1100px}.brand{color:var(--red2)}@media (min-width:1000px){body
 <div class="overlay hidden" id="infoov" style="z-index:15"><div class="box"><div id="info-b"></div><button class="go" id="info-close" style="width:100%;margin-top:10px">Close</button></div></div>
 <script>
 /* =================== core =================== */
-const APP_VERSION='0.7.1';
+const APP_VERSION='0.8.0';
 /* Screen wake lock (Milestone 1): keeps the phone from dimming or locking during a timed skill.
    On only while an activity runs: keepAwake(true) when it starts, keepAwake(false) back at the menu or on the result screen. */
 const WAKE={s:null,want:false};
@@ -206,22 +206,11 @@ const LESSON=[
  {t:'Choking — 2025 change',pts:['Adult or child who can\'t cough, speak, or breathe: 5 back blows, then 5 abdominal thrusts. Repeat.','Infant: 5 back blows, then 5 chest thrusts. Repeat. Never abdominal thrusts on an infant.','If they become unresponsive: call for help and start CPR. Look in the mouth before breaths — remove an object only if you can see it. No blind finger sweeps.'],
   q:'An adult is choking and can\'t speak. What\'s the 2025 sequence?',o:[['5 back blows, then 5 abdominal thrusts','good'],['Abdominal thrusts only, until it comes out','bad'],['5 chest thrusts, then a finger sweep','bad']],why:'2025 added back blows first for adults and children, alternating with abdominal thrusts.'}];
 let LS=null;
-function lessonStart(){keepAwake(true);pca('begin','bls','lesson',()=>LS?`slide-${LS.i+1}`:'');LS={i:0,first:{},answered:false};$('lessonov').classList.remove('hidden');lessonRender();}
-function lessonRender(){const s=LESSON[LS.i];LS.answered=false;LS.ord=shuf(s.o.map((o,k)=>k));
-  $('lesson-box').innerHTML=`<div style="display:flex;justify-content:space-between;align-items:center"><span class="tag">Lesson · ${LS.i+1} of ${LESSON.length}</span><button data-l="tv" style="padding:6px 10px;font-size:13px">${document.body.classList.contains('tv')?'Phone view':'Big-screen view'}</button></div>
-   <h2>${esc(s.t)}</h2><ul>${s.pts.map(x=>`<li>${x.startsWith('2025')?'<b style="color:#ffc23d">2025:</b> '+esc(x.slice(5).replace(/^: /,'')):esc(x)}</li>`).join('')}</ul>
-   <div style="border-top:1px solid var(--line);padding-top:10px"><p style="font-size:14px;color:var(--soft);margin:0 0 4px">Check your understanding</p><p style="font-size:17px;font-weight:700;margin:0 0 8px">${esc(s.q)}</p>
-   ${LS.ord.map(k=>`<button class="opt" data-l="ans" data-k="${k}">${esc(s.o[k][0])}</button>`).join('')}<p id="l-fb" style="font-size:15px"></p></div>
-   <div class="dots">${LESSON.map((_,k)=>`<i class="${k<=LS.i?'on2':''}"></i>`).join('')}</div>
-   <div class="row"><button data-l="prev" ${LS.i?'':'disabled'}>Back</button><button class="go" data-l="next" id="l-next" disabled>${LS.i+1<LESSON.length?'Next':'Finish'}</button></div>
-   <button data-l="quit" style="width:100%;margin-top:8px">Leave the lesson</button>`;$('lessonov').scrollTop=0;}
-function lessonAct(ds){const a=ds.l;if(a==='ans'){if(LS.answered)return;const s=LESSON[LS.i],o=s.o[+ds.k],ok=o[1]==='good';if(LS.first[LS.i]===undefined)LS.first[LS.i]=ok;
-    if(ok){LS.answered=true;$('l-next').disabled=false;}$('l-fb').innerHTML=`<b style="color:${ok?'#7fe3a4':o[1]==='partial'?'#ffc23d':'#ff9a96'}">${ok?'Right.':o[1]==='partial'?'Not quite.':'No.'}</b> ${esc(ok?s.why:'Try again.')}`;}
-  else if(a==='next'){if(!LS.answered)return;if(LS.i+1<LESSON.length){LS.i++;lessonRender();}else lessonDone();}
-  else if(a==='prev'){if(LS.i){LS.i--;lessonRender();}}else if(a==='tv'){document.body.classList.toggle('tv');lessonRender();}
-  else if(a==='quit'){pca('abandon');$('lessonov').classList.add('hidden');LS=null;}}
-function lessonDone(){const right=Object.values(LS.first).filter(Boolean).length,score=Math.round(right/LESSON.length*100);pca('end',pca('bkt',score));$('lessonov').classList.add('hidden');record('lesson','lesson',score);
-  showDone('Lesson complete',score,`<p>${right} of ${LESSON.length} checks right on the first try.</p><p style="font-size:14px;color:var(--soft)">Next: practice the skills on a real clock.</p>`,()=>lessonStart());LS=null;}
+function lessonStart(){keepAwake(true);pca('begin','bls','lesson',()=>LS?`slide-${LS.i+1}`:'');LS=pcLessonStart({slides:LESSON,point:x=>x.startsWith('2025')?'<b style="color:#ffc23d">2025:</b> '+esc(x.slice(5).replace(/^: /,'')):esc(x),onDone:lessonDone,onQuit:()=>{pca('abandon');LS=null;}});}
+function lessonRender(){pcLessonRender(LS);}
+function lessonAct(ds){pcLessonAct(LS,ds);}
+function lessonDone(score,right,n){pca('end',pca('bkt',score));record('lesson','lesson',score);
+  showDone('Lesson complete',score,pcDebriefBody({score,compare:pcBestPrev((load().runs||[]).filter(x=>x.kind==='lesson').slice(0,-1)),kicker:'Next: practice the skills on a real clock.',metrics:[['Right on the first try',`${right} of ${n}`]],clean:false}),()=>lessonStart());LS=null;}
 $('lesson-box').onclick=e=>{const b=e.target.closest&&e.target.closest('[data-l]');if(b)lessonAct(b.dataset);};
 $('h-learn').onclick=()=>lessonStart();
 /* =================== step engine =================== */
@@ -422,14 +411,12 @@ const DRILLS={
  ages:{name:'Adult vs. child vs. infant',bank:()=>EXAM.filter((_,i)=>[2,4,6,11,12,15,18,20].includes(i))},
  choke:{name:'Choking by age',bank:()=>[['Adult can\'t speak or cough. First?','5 back blows',['5 chest thrusts','A blind finger sweep'],'2025: back blows first for adults and children.'],['Infant can\'t cry or cough. After 5 back blows?','5 chest thrusts',['5 abdominal thrusts','A blind finger sweep'],'Infants: chest thrusts, never abdominal thrusts.'],['Child can\'t speak. After 5 back blows?','5 abdominal thrusts',['5 chest thrusts','Wait for coughing'],'Children: alternate back blows and abdominal thrusts.'],['Adult is coughing forcefully. What do you do?','Encourage coughing, stay close',['Start back blows now','Start abdominal thrusts'],'A forceful cough is moving air. Watch closely and be ready.'],['Victim goes unresponsive. Before breaths?','Look in the mouth',['Do a finger sweep','Give abdominal thrusts'],'Look; remove only what you can see.']].map(([q,a,d,why])=>({q,a,d,why}))}};
 let QZ=null;
-function quizStart(name,bank,n,kind,id){keepAwake(true);pca('begin','bls',kind==='exam'?'exam':'drill-'+id,()=>QZ&&QZ.qs?`question-${QZ.i+1}`:'');const qs=shuf(bank).slice(0,n).map(x=>Object.assign({},x,{ord:shuf([x.a,...x.d])}));QZ={name,qs,i:0,right:0,kind,id};$('quizov').classList.remove('hidden');quizQ();}
-function quizQ(){const q=QZ.qs[QZ.i];$('qz-title').textContent=QZ.name;$('qz-meta').textContent=`${QZ.i+1} of ${QZ.qs.length} · ${QZ.right} right`;
-  $('qz-body').innerHTML=`<p style="font-size:18px;margin:0 0 10px">${esc(q.q)}</p>${q.ord.map((o,i)=>`<button class="opt" data-q="ans" data-i="${i}">${esc(o)}</button>`).join('')}<p id="qz-fb" style="font-size:15px"></p>`;$('qz-foot').innerHTML='<button data-q="quit" style="width:100%">Quit</button>';}
-function quizAct(ds){const a=ds.q;if(a==='quit'){pca('abandon');$('quizov').classList.add('hidden');QZ=null;return;}
-  if(a==='menu'){drillMenu();return;}if(a==='again'){const k=QZ.kind,id=QZ.id;k==='exam'?examStart():quizStart(DRILLS[id].name,DRILLS[id].bank(),DRILLS[id].bank().length,'drill',id);return;}
-  if(a==='go'){quizStart(DRILLS[ds.k].name,DRILLS[ds.k].bank(),DRILLS[ds.k].bank().length,'drill',ds.k);return;}
-  if(a==='ans'){const q=QZ.qs[QZ.i];if(q.done)return;q.done=true;const ok=q.ord[+ds.i]===q.a;if(ok)QZ.right++;$('qz-fb').innerHTML=`<b style="color:${ok?'#7fe3a4':'#ff9a96'}">${ok?'Right.':'Answer: '+esc(q.a)+'.'}</b> ${esc(q.why)}`;$('qz-foot').innerHTML=`<button data-q="next" class="go" style="width:100%">${QZ.i+1<QZ.qs.length?'Next':'Results'}</button>`;}
-  if(a==='next'){QZ.i++;if(QZ.i<QZ.qs.length)quizQ();else{const sc=Math.round(QZ.right/QZ.qs.length*100);pca('end',pca('bkt',sc));record(QZ.kind,QZ.id,sc);$('qz-body').innerHTML=`<div class="big">${sc}</div><p>${QZ.right} of ${QZ.qs.length} right.${QZ.kind==='exam'?(sc>=85?' Solid — keep it sharp.':' Review the lesson and try again — aim for 85% or better.'):''}</p>`;$('qz-foot').innerHTML=`<div class="row"><button data-q="${QZ.kind==='exam'?'quit':'menu'}">${QZ.kind==='exam'?'Done':'All drills'}</button><button data-q="again" class="go">Again</button></div>`;}}}
+function quizStart(name,bank,n,kind,id){keepAwake(true);pca('begin','bls',kind==='exam'?'exam':'drill-'+id,()=>QZ&&QZ.qs?`question-${QZ.i+1}`:'');
+  QZ=pcQuizStart({name,qs:shuf(bank).slice(0,n),kind,id,note:sc=>kind==='exam'?(sc>=85?'Solid — keep it sharp.':'Review the lesson and try again — aim for 85% or better.'):'',menuAction:kind==='exam'?'quit':'menu',menuLabel:kind==='exam'?'Done':'All drills',
+    onDone:sc=>{pca('end',pca('bkt',sc));record(kind,id,sc);},onQuit:()=>{pca('abandon');$('quizov').classList.add('hidden');QZ=null;}});}
+function quizQ(){pcQuizQ(QZ);}
+function quizAct(ds){const a=ds.q;if(a==='menu'){drillMenu();return;}if(a==='again'){const k=QZ.kind,id=QZ.id;k==='exam'?examStart():quizStart(DRILLS[id].name,DRILLS[id].bank(),DRILLS[id].bank().length,'drill',id);return;}
+  if(a==='go'){quizStart(DRILLS[ds.k].name,DRILLS[ds.k].bank(),DRILLS[ds.k].bank().length,'drill',ds.k);return;}pcQuizAct(QZ,ds);}
 function examStart(){quizStart('Exam practice',EXAM,15,'exam','exam');}
 function drillMenu(){QZ={kind:'drill'};$('qz-title').textContent='Quick drills';$('qz-meta').textContent='';$('qz-body').innerHTML=Object.keys(DRILLS).map(k=>`<button class="scen" data-q="go" data-k="${k}"><b>${DRILLS[k].name}</b></button>`).join('')+`<button class="scen" id="dr-tempo"><b>Compression tempo</b><span>Same as the practice station — 30:2, three rounds</span></button>`;$('qz-foot').innerHTML='<button data-q="quit" class="go" style="width:100%">Back</button>';$('quizov').classList.remove('hidden');$('dr-tempo').onclick=()=>{$('quizov').classList.add('hidden');runStart('tempo');};}
 $('qz-body').onclick=e=>{const b=e.target.closest&&e.target.closest('[data-q]');if(b)quizAct(b.dataset);};$('qz-foot').onclick=$('qz-body').onclick;
