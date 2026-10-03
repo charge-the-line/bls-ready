@@ -17,7 +17,7 @@ with sync_playwright() as p:
         pg.click('#h-learn'); pg.wait_for_timeout(150); rows.append((w, 'lesson', (pg.evaluate(OVER)+1000*pg.evaluate(SMALL)))); pg.click('[data-l="quit"]')
         pg.click('#h-set'); pg.wait_for_timeout(150); rows.append((w, 'settings', (pg.evaluate(OVER)+1000*pg.evaluate(SMALL)))); pg.click('#set-close')
         pg.evaluate("localStorage.setItem('preconnect-drill',JSON.stringify({on:true,inst:'Max',roster:['Jo','Sam'],who:'',start:new Date().toISOString()}))"); pg.goto(URL); pg.wait_for_timeout(300); rows.append((w, 'drill picker', (pg.evaluate(OVER)+1000*pg.evaluate(SMALL)))); pg.click('.pc-drill-name'); pg.wait_for_timeout(200); rows.append((w, 'drill bar', (pg.evaluate(OVER)+1000*pg.evaluate(SMALL)))); pg.evaluate("localStorage.removeItem('preconnect-drill')")
-        for rid in ('tempo','adult','infant','bvm','chokeA','chokeI','team','opioid','baby','child'):
+        for rid in ('tempo','adult','infant','child2','bvm','chokeA','chokeI','team','opioid','baby','child','pool','crib'):
             pg.goto(URL); pg.wait_for_timeout(150); pg.click(f'[data-run="{rid}"]'); pg.wait_for_timeout(150)
             for _ in range(6):   # tap through the first few steps with real clicks
                 for sel in ('[data-r="next"]','[data-r="opt"]','[data-r="seq"]','[data-r="timer"]','[data-r="tap"]','[data-r="alt"]','[data-r="rhythm"]','[data-r="breath"]'):
@@ -26,7 +26,7 @@ with sync_playwright() as p:
                 pg.wait_for_timeout(80)
             rows.append((w, rid, (pg.evaluate(OVER)+1000*pg.evaluate(SMALL))))
         if w == 390:   # play every activity to the end with REAL clicks, finding buttons by their visible text
-            for rid in ('tempo','adult','infant','bvm','chokeA','chokeI','team','opioid','baby','child'):
+            for rid in ('tempo','adult','infant','child2','bvm','chokeA','chokeI','team','opioid','baby','child','pool','crib'):
                 pg.goto(URL); pg.wait_for_timeout(150); pg.evaluate("window.__t=1000;NOW=()=>window.__t;")
                 pg.click(f'[data-run="{rid}"]'); ok = False
                 for _ in range(400):
@@ -46,7 +46,7 @@ with sync_playwright() as p:
                     if k == 'timer': adv(1); woke('[data-r="timer"]'); pg.click('[data-r="timer"]'); adv(7); pg.click('[data-r="timer"]'); continue
                     if k == 'tap': adv(0.545); woke('[data-r="tap"]'); pg.click('[data-r="tap"]'); continue
                     if k == 'breaths': adv(1.1); woke('[data-r="breath"]'); pg.click('[data-r="breath"]'); continue
-                    if k == 'rhythm': adv(6); woke('[data-r="rhythm"]'); pg.click('[data-r="rhythm"]'); continue
+                    if k == 'rhythm': adv(pg.evaluate("RUN.steps[RUN.i].lo<3?2.5:6")); woke('[data-r="rhythm"]'); pg.click('[data-r="rhythm"]'); continue
                     if k == 'alt':
                         x = pg.evaluate("RUN.st.inCyc<5?'a':'b'"); adv(0.6); woke(f'[data-r="alt"][data-x="{x}"]'); pg.click(f'[data-r="alt"][data-x="{x}"]'); continue
                 pg.wait_for_timeout(800)   # the score counts up for about 0.6 s; a person reads it once it settles

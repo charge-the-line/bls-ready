@@ -96,3 +96,12 @@ Foundation fixes: fonts served from this site, screen wake lock, finger-sized bu
 
 - `drill` section: with a session on, the bar reads "Up: Jo" and the saved lesson is stamped with who, instructor and night. Removing `pcDrillStamp` from `record()` in a scratch copy fails this check.
 - Browser check: with a session in storage the picker opens on load and the bar shows after a pick.
+
+## Depth pack checks (added October 2026)
+
+- `content`: the depth-pack facts are the right answer somewhere (drowning = breaths first and a dry chest; pregnancy = belly to her left; pediatric pulse under 60 = CPR; child depth about 2 inches; child pulse carotid or femoral) and "compressions only" is never the right answer for a drowning. The crib scenario's rescue breaths are timed at 1.5–3.5 s, the bag-mask station's at 4.5–8 s.
+- `clean`, `human`-style runs and `mistakes` cover the three new activities; infant breaths every 6 s (too slow) and every 1 s (too fast) are caught in the crib scenario. The bot times rescue breaths per step (2.5 s when the step's floor is under 3 s, else 6 s).
+- `quiz`: the bank holds 36 questions, exam practice asks 15, every drill's index list resolves to a real question (banks pick by index, so new questions are appended).
+- `balance` still runs over the lesson, every choice step and the bank (93 items).
+- `record`: readiness is 1 of 19 after one station.
+- Browser check plays all 13 activities to the end with real taps; rescue-breath taps follow the step's cadence.
