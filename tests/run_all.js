@@ -3,7 +3,7 @@
    Sections: syntax content balance lesson clean mistakes jitter quiz record fuzz   (or: quick) */
 global.window=global.window||{};
 const path=require('path'),fs=require('fs'),vm=require('vm');
-const ALL=['syntax','content','balance','lesson','clean','mistakes','jitter','quiz','record','drill','sound','smooth','fuzz'];
+const ALL=['syntax','content','balance','lesson','clean','mistakes','jitter','quiz','record','drill','sound','smooth','pool','fuzz'];
 let want=process.argv.slice(2);if(!want.length)want=ALL;if(want.includes('quick'))want=['syntax','content','balance','lesson','quiz','record'];
 let failed=0,n=0;const T0=Date.now();
 function report(sec,name,ok,detail=''){n++;if(!ok)failed++;console.log(`${ok?'PASS':'FAIL'}  ${sec.padEnd(9)} ${name}${detail?'  — '+detail:''}`);}
@@ -119,7 +119,7 @@ if(want.includes('smooth')){
   {const r=play('team',0);report('smooth','debrief lists your steps',/Your steps/i.test(r.detail)&&(r.detail.match(/✓/g)||[]).length>=10,((r.detail.match(/✓/g)||[]).length)+' steps shown');}
 }
 if(want.includes('record')){// Milestone 2: home readiness, best-score chips, count-up, haptics setting, settings sheet, report-style debrief
-  const {api,els,store}=boot({'bls-ready':JSON.stringify({runs:[{kind:'station',id:'adult',score:80,d:'2026-10-01T10:00:00Z',tier:0},{kind:'station',id:'adult',score:95,d:'2026-10-02T10:00:00Z',tier:0}]})});api.showHome();const R=api.readiness();
+  const {api,els,store}=boot({'bls-ready':JSON.stringify({runs:[{kind:'station',id:'adult',score:80,d:new Date(Date.now()-3600e3).toISOString(),tier:0},{kind:'station',id:'adult',score:95,d:new Date(Date.now()-1800e3).toISOString(),tier:0}]})});api.showHome();const R=api.readiness();
   report('record','home shows a best-score chip per activity and a readiness count',els['chip-adult'].textContent==='95'&&els['chip-tempo'].textContent==='—'&&R.done===1&&R.total===19&&els['rdy-t'].textContent==='1 of 19 activities'&&els['rdy-n'].textContent==='5%',`adult ${els['chip-adult'].textContent}, ${R.done}/${R.total}`);
   const el={textContent:''};api.countUp(el,87);report('record','score count-up lands on the exact score when motion is unavailable',el.textContent==='87');
   let v=0;navigator.vibrate=()=>{v++;return true;};api.setSetting('haptics','off');api.haptic(8);const a=v;api.setSetting('haptics','on');const pv=v;api.haptic(8);report('record','haptics follow the shared setting (off means no vibration; turning it on previews one buzz)',a===0&&pv===1&&v===2,`off ${a}, preview ${pv}, on ${v}`);delete navigator.vibrate;
@@ -127,6 +127,44 @@ if(want.includes('record')){// Milestone 2: home readiness, best-score chips, co
   {const d=n=>new Date(Date.now()-n*864e5).toISOString();const b2=boot({'bls-ready':JSON.stringify({runs:[{kind:'station',id:'adult',score:95,d:d(10),tier:0},{kind:'station',id:'bvm',score:40,d:d(1),tier:0}]})});b2.api.showHome();
    report('record','home chips turn to Due / Again from the spacing schedule, and the readiness line counts them',b2.els['chip-adult'].textContent==='Due'&&b2.els['chip-bvm'].textContent==='Again'&&/2 due for review/.test(b2.els['rdy-s'].textContent),`${b2.els['chip-adult'].textContent}, ${b2.els['chip-bvm'].textContent}`);}
   {const b4=boot();global.__T=1000;b4.api.runStart('tempo');b4.api.runFinish();report('record','debrief uses the shared Debrief 2.0 body (compare line, clean-run line, score)',/pc-compare/.test(b4.els['done-b'].innerHTML)&&/Clean run/.test(b4.els['done-b'].innerHTML)&&b4.els['done-s'].textContent==='100',b4.els['done-s'].textContent);}}
+
+if(want.includes('pool')){// Pulled from the pool, BLS Ready 0.15.0: four patients for the AED, the pad step, and the drowning breath lines tagged
+  const V=k=>{global.window.FORCE_V={pool:k};};const off=()=>{delete global.window.FORCE_V;};
+  for(const k of ['A','B','C','D']){V(k);const r=[play('pool',0),play('pool',1)];off();report('pool',`patient ${k}: a competent run scores 100 on Guided and Recall`,r.every(x=>x.ok&&x.score===100),r.map(x=>x.score).join('/'));}
+  {const seen=new Set();for(let i=0;i<60;i++){global.__T=1000;const {api}=boot();api.runStart('pool');seen.add(api.RUN().V.v);}
+   global.__T=1000;const d=boot({'preconnect-drill':JSON.stringify({on:true,inst:'Max',roster:['Jo'],who:'Jo',start:new Date().toISOString()})});d.api.runStart('pool');
+   report('pool','patients are picked at random (all four seen in 60 starts); a Drill Night always gets A, the wet chest',seen.size===4&&d.api.RUN().V.key==='wet',[...seen].join(''));}
+  {V('B');const r=play('pool',0);off();
+   report('pool','the debrief names the patient',/Patient Medication patch/.test(r.detail));}
+  {V('C');const r=play('pool',0);off();const last=r.runs.slice(-1)[0]||{};
+   report('pool','the saved run carries the patient (v and pt) for the training record',last.id==='pool'&&last.v==='C'&&last.pt==='Implanted device',`${last.v} ${last.pt}`);}
+  // helper: walk to the pad step with good play, then hand control back
+  const toPads=(k,tier=0)=>{V(k);global.__T=1000;const B=boot();const {api}=B;api.setTier(tier);api.runStart('pool');off();const adv=s=>{global.__T+=s;};let g=0;
+    while(api.RUN().steps[api.RUN().i].k!=='pads'&&g++<300){const R=api.RUN(),s=R.steps[R.i],st=R.st;
+      if(s.k==='info'){adv(1.5);api.runAct({r:'next'});}else if(s.k==='choice'){adv(2);if(st.solved)api.runAct({r:'next'});else api.runAct({r:'opt',i:String(s.o.findIndex(x=>x[1]==='good'))});}
+      else if(s.k==='seq'){adv(1);api.runAct({r:'seq',x:s.items[st.next]});}else if(s.k==='timer'){adv(1);api.runAct({r:'timer'});adv(7);api.runAct({r:'timer'});}
+      else if(s.k==='tap'){adv(st.taps.length?.545:1.2);api.runAct({r:'tap'});}else if(s.k==='breaths'){adv(1.1);api.runAct({r:'breath'});}}
+    const tap=(r,z)=>{adv(1.2);api.runAct(r==='pad'?{r,z}:{r,x:z});};return Object.assign(B,{tap,adv,onPads:()=>api.RUN()&&api.RUN().steps[api.RUN().i].k==='pads'});};
+  {const T=toPads('B');T.tap('pad','ru');const R=T.api.RUN();const over=R.score===90&&R.st.overPatch&&/over the medication patch/.test(R.msg.html);T.tap('pad','ls');const held=T.onPads();T.tap('prep','patch');
+   report('pool','patch: a pad over the patch happens and costs 10; the step waits until the patch is peeled off, then moves on',over&&held&&!T.onPads()&&R.score===90&&R.errs.length===1,`score ${R.score}`);}
+  {const T=toPads('C');T.tap('pad','lu');const R=T.api.RUN();const hit=R.score===90&&/implanted device/.test(R.errs[0]||'')&&!R.st.on.lu;T.tap('pad','ru');T.tap('pad','ls');
+   report('pool','implanted device: a pad on the bulge costs 10 and is moved; the standard spots clear it',hit&&!T.onPads()&&R.score===90&&/clear of the device/.test(R.log.slice(-1)[0].detail),`score ${R.score}`);}
+  {const T=toPads('D');T.tap('pad','ru');T.tap('pad','ls');const R=T.api.RUN();const chk=R.st.check&&T.onPads()&&/Check pads/.test(R.msg.html)&&R.score===100;T.tap('prep','analyze');const an=R.score===95;T.tap('prep','press');const still=T.onPads()&&R.st.check;T.tap('prep','second');
+   report('pool','very hairy chest: pads on the hair get "Check pads"; analyzing anyway costs 5; pressing is not enough; the second set fixes it',chk&&an&&still&&!T.onPads()&&R.score===95&&/second set/.test(R.log.slice(-1)[0].detail),`score ${R.score}`);}
+  {const T=toPads('D');T.tap('pad','ru');T.tap('pad','ls');T.tap('prep','shave');const R=T.api.RUN();
+   report('pool','very hairy chest: the kit razor after "Check pads" also fixes it, at no cost',!T.onPads()&&R.score===100);}
+  {const T=toPads('A');const R=T.api.RUN();T.tap('pad','mid');const a=R.score===95;T.tap('pad','belly');const b=R.score===90;T.tap('prep','patch');T.tap('prep','shave');T.tap('prep','second');const c=R.score===90&&T.onPads();T.tap('pad','ru');T.tap('pad','ls');
+   report('pool','wrong spots cost 5 each; a patch, razor or second-set tap with nothing to fix costs nothing',a&&b&&c&&!T.onPads()&&R.score===90,`score ${R.score}`);}
+  {const T=toPads('A');const R=T.api.RUN();T.adv(.3);T.api.runAct({r:'pad',z:'ru'});const ign=!R.st.on.ru;T.adv(1);T.api.runAct({r:'next'});const stay=T.onPads();
+   const spy=el=>{let n=0,v=el.innerHTML;Object.defineProperty(el,'innerHTML',{get:()=>v,set:x=>{v=x;n++;},configurable:true});return ()=>n;};const cnt=spy(T.els['run-box']);for(let i=0;i<20;i++){T.adv(.25);T.api.runUpd();}
+   report('pool','pad step: a tap within half a second is ignored, Continue cannot skip it, and nothing is rebuilt while you look',ign&&stay&&cnt()===0,`rebuilds ${cnt()}`);}
+  for(const [l,k,o] of [['moving him off the puddle, drying, and clearing the guest skipped (wrong choices)','A',{choice:'bad'}]]){V(k);const r=play('pool',0,o);off();report('pool',`${l} costs points`,r.ok&&r.score<100,'score '+r.score);}
+  {const {api}=boot();const texts=[...api.LESSON.flatMap(sl=>[...sl.pts,sl.why]),...api.EXAM.map(q=>q[3]||q.why||''),...Object.values(api.DEFS).flatMap(d=>d.steps().flatMap(s=>[s.p,s.why||'']))].filter(Boolean);
+   const ref=(html.match(/Drowning<\/span><b>[^<]*/)||[''])[0];const lines=texts.filter(t=>/drown/i.test(t)&&/breath/i.test(t)&&/(first|early|order)/i.test(t)).concat([ref]);
+   report('pool','every drowning breath-order line (lesson, exam, pool scenario, pocket reference) says "to confirm with the 2025 course materials"',lines.length>=5&&lines.every(t=>/to confirm with the 2025 course materials/i.test(t)),`${lines.length} lines`);}
+  {let lo=0,sh=0,t=0;for(const k of ['A','B','C','D']){V(k);global.__T=1000;const b=boot();off();b.api.runStart('pool');b.api.RUN().steps.forEach(s=>{if(s.k!=='choice')return;const L=s.o.map(x=>x[0].length),g=s.o.findIndex(x=>x[1]==='good');t++;if(L[g]===Math.max(...L))lo++;else if(L[g]===Math.min(...L))sh++;});}
+   report('pool','pool decisions: the right answer is neither usually the longest nor the shortest',lo/t<=.45&&sh/t<=.45,`longest ${lo}, shortest ${sh} of ${t}`);}
+}
 if(want.includes('fuzz')){let crashes=0;const errs=[];const R=['next','opt','seq','timer','tap','breath','rhythm','alt','quit'];
   for(let run=0;run<60;run++){global.__T=1000;const {api}=boot();api.runStart(IDS[run%IDS.length]);
     try{for(let i=0;i<800&&api.RUN();i++){global.__T+=Math.random()*3;const a=R[Math.floor(Math.random()*(R.length-(i<700?1:0)))],s=api.RUN().steps[api.RUN().i];

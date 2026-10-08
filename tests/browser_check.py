@@ -25,10 +25,12 @@ with sync_playwright() as p:
                     if en.count(): en.first.click(); break
                 pg.wait_for_timeout(80)
             rows.append((w, rid, (pg.evaluate(OVER)+1000*pg.evaluate(SMALL))))
-        if w == 390:   # play every activity to the end with REAL clicks, finding buttons by their visible text
-            for rid in ('tempo','adult','infant','child2','bvm','chokeA','chokeI','team','opioid','baby','child','pool','crib'):
+        fulls = [(r, None) for r in ('tempo','adult','infant','child2','bvm','chokeA','chokeI','team','opioid','baby','child','pool','crib')] if w == 390 else []
+        fulls += [('pool', v) for v in 'ABCD']   # the four pool patients at both widths, pads placed by tapping their labels
+        for rid, force in fulls:   # play every activity to the end with REAL clicks, finding buttons by their visible text
                 pg.goto(URL); pg.wait_for_timeout(150); pg.evaluate("window.__t=1000;NOW=()=>window.__t;")
-                pg.click(f'[data-run="{rid}"]'); ok = False
+                if force: pg.evaluate(f"window.FORCE_V={{pool:'{force}'}}")
+                pg.click(f'[data-run="{rid}"]'); ok = False; padrow = None
                 for _ in range(400):
                     if pg.is_visible('#doneov'): ok = True; break
                     k = pg.evaluate("RUN&&RUN.steps[RUN.i]?RUN.steps[RUN.i].k:null")
@@ -47,11 +49,21 @@ with sync_playwright() as p:
                     if k == 'tap': adv(0.545); woke('[data-r="tap"]'); pg.click('[data-r="tap"]'); continue
                     if k == 'breaths': adv(1.1); woke('[data-r="breath"]'); pg.click('[data-r="breath"]'); continue
                     if k == 'rhythm': adv(pg.evaluate("RUN.steps[RUN.i].lo<3?2.5:6")); woke('[data-r="rhythm"]'); pg.click('[data-r="rhythm"]'); continue
+                    if k == 'pads':
+                        if padrow is None: padrow = pg.evaluate(OVER)+1000*pg.evaluate(SMALL)
+                        key = pg.evaluate("RUN.V.key"); st = pg.evaluate("({on:RUN.st.on,po:RUN.st.patchOff,sh:RUN.st.shaved})")
+                        if key == 'patch' and not st['po']: lab = 'Peel off the patch, wipe the skin'
+                        elif key == 'hair' and not st['sh']: lab = 'Shave the pad spots with the kit razor'
+                        elif not st['on'].get('ru'): lab = 'Below his right collarbone'
+                        else: lab = 'His left side, below the armpit'
+                        adv(1); pg.locator('#run-box button', has_text=lab).first.click(); continue
                     if k == 'alt':
                         x = pg.evaluate("RUN.st.inCyc<5?'a':'b'"); adv(0.6); woke(f'[data-r="alt"][data-x="{x}"]'); pg.click(f'[data-r="alt"][data-x="{x}"]'); continue
                 pg.wait_for_timeout(800)   # the score counts up for about 0.6 s; a person reads it once it settles
                 score = pg.text_content('#done-s') if ok else '—'
-                rows.append((w, rid + ' (full)', 0 if ok and score == '100' else 99))
+                tag = rid + (' ' + force if force else '')
+                rows.append((w, tag + ' (full)', 0 if ok and score == '100' else 99))
+                if force: rows.append((w, tag + ' pads', padrow if padrow is not None else 99)); rows.append((w, tag + ' result', pg.evaluate(OVER)+1000*pg.evaluate(SMALL)))
         pg.evaluate("localStorage.setItem('bls-ready',JSON.stringify({inst:true,runs:[]}))"); pg.goto(URL); pg.wait_for_timeout(200); pg.click('[data-run="tempo"]'); pg.wait_for_timeout(300); pg.click('#inst-fab'); pg.wait_for_timeout(200); rows.append((w, 'instructor', (pg.evaluate(OVER)+1000*pg.evaluate(SMALL)))); pg.click('#inst-close'); pg.evaluate("localStorage.removeItem('bls-ready')")
         pg.goto(URL+'?drill=special'); pg.wait_for_timeout(300); rows.append((w, 'daily link', (pg.evaluate(OVER)+1000*pg.evaluate(SMALL)) + (0 if pg.is_visible('#quizov') else 99)))
         pg.goto(URL); pg.wait_for_timeout(150); pg.click('#h-exam'); pg.wait_for_timeout(150); rows.append((w, 'exam', (pg.evaluate(OVER)+1000*pg.evaluate(SMALL))))

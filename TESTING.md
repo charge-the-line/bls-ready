@@ -123,3 +123,14 @@ Foundation fixes: fonts served from this site, screen wake lock, finger-sized bu
 - `drill`: an adult run on Guided with sound on (a fake AudioContext is armed after boot): the Instructor button is hidden until the switch is on and a run is live; opening the sheet sets `frozenAt` and stops the metronome; a tap 40 s into the freeze is ignored; the pads inject queues exactly one `inj` choice step and a second inject is rendered disabled; after closing, `t0` and the last tap moved by exactly 40 s, the metronome is back, and 20 more compressions at 110/min still score one clean set; Freeze holds until the floating button is tapped; the saved run has `inst:1` and the debrief names the inject.
 - Browser check: an `instructor` row at 320 and 390 px (store `{inst:true}`, start Adult CPR, tap the Instructor button).
 - Lesson from this row: BLS Ready runs inside the `#runov` overlay (z-index 12), so the floating Instructor button must sit above it (`.fab{z-index:21}`, under `#instov` at 22). At the Charge the Line value of 9 the button rendered but every tap landed on the overlay; the browser check caught it because it taps the button for real.
+
+## Pool patients (added October 8, 2026, `pool` section, BLS Ready 0.15.0)
+- Each of the four patients (wet chest, medication patch, implanted device, very hairy chest) scores 100 on Guided and Recall; patients are random (all four seen in 60 starts) and a Drill Night always gets the wet chest.
+- The debrief and the saved run name the patient (`v`, `pt`).
+- Mistakes happen and cost points (rule 14): a pad over the patch (10, and the step waits for the patch to come off), a pad on the device bulge (10, moved), any other wrong spot (5), analyzing while the AED says Check pads (5). Pressing alone doesn't fix the hairy chest; the second set or the razor does. Fix-up buttons with nothing to fix cost nothing.
+- The pad step ignores a tap within half a second, can't be skipped by Continue, and rebuilds nothing while you look.
+- Every drowning breath-order line (lesson, exam, pool scenario, pocket reference) carries "to confirm with the 2025 course materials".
+- Decision balance holds across all four patients.
+- Proven to fail (scratch copy): removing the patch penalty, the tag, the Continue guard, or the Check pads phase each fails its check.
+- `browser_check.py` plays the pool with each patient to the end at 320 and 390 px, tapping the pad spots and fix-ups by their labels, and measures the pad screen and the result screen.
+
