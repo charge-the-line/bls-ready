@@ -3,12 +3,12 @@
    Sections: syntax content balance lesson clean mistakes jitter quiz record fuzz   (or: quick) */
 global.window=global.window||{};
 const path=require('path'),fs=require('fs'),vm=require('vm');
-const ALL=['syntax','content','balance','lesson','clean','mistakes','jitter','quiz','record','drill','sound','smooth','pool','fuzz'];
+const ALL=['syntax','content','balance','lesson','clean','mistakes','jitter','quiz','record','drill','sound','smooth','pool','slow','fuzz'];
 let want=process.argv.slice(2);if(!want.length)want=ALL;if(want.includes('quick'))want=['syntax','content','balance','lesson','quiz','record'];
 let failed=0,n=0;const T0=Date.now();
 function report(sec,name,ok,detail=''){n++;if(!ok)failed++;console.log(`${ok?'PASS':'FAIL'}  ${sec.padEnd(9)} ${name}${detail?'  — '+detail:''}`);}
 const html=fs.readFileSync(path.join(__dirname,'..','index.html'),'utf8');const {boot}=require('./bls_mock.js');const {play}=require('./bls_bot.js');
-const IDS=['tempo','adult','infant','child2','bvm','chokeA','chokeI','team','opioid','baby','child','pool','crib'];
+const IDS=['tempo','adult','infant','child2','bvm','chokeA','chokeI','team','opioid','baby','child','pool','crib','slow'];
 if(want.includes('syntax')){try{new vm.Script(html.split('<script>')[1].split('</script>')[0]);report('syntax','index.html script compiles',true);}catch(e){report('syntax','index.html script compiles',false,e.message);}
   {const ver=(html.match(/APP_VERSION='([^']+)'/)||[])[1],sw=fs.readFileSync(path.join(__dirname,'..','sw.js'),'utf8'),cache=(sw.match(/CACHE = '([^']+)'/)||[])[1];
    report('syntax','service-worker cache matches app version',cache===`bls-ready-v${ver}`,`app ${ver}, cache ${cache}`);
@@ -120,7 +120,7 @@ if(want.includes('smooth')){
 }
 if(want.includes('record')){// Milestone 2: home readiness, best-score chips, count-up, haptics setting, settings sheet, report-style debrief
   const {api,els,store}=boot({'bls-ready':JSON.stringify({runs:[{kind:'station',id:'adult',score:80,d:new Date(Date.now()-3600e3).toISOString(),tier:0},{kind:'station',id:'adult',score:95,d:new Date(Date.now()-1800e3).toISOString(),tier:0}]})});api.showHome();const R=api.readiness();
-  report('record','home shows a best-score chip per activity and a readiness count',els['chip-adult'].textContent==='95'&&els['chip-tempo'].textContent==='—'&&R.done===1&&R.total===19&&els['rdy-t'].textContent==='1 of 19 activities'&&els['rdy-n'].textContent==='5%',`adult ${els['chip-adult'].textContent}, ${R.done}/${R.total}`);
+  report('record','home shows a best-score chip per activity and a readiness count',els['chip-adult'].textContent==='95'&&els['chip-tempo'].textContent==='—'&&R.done===1&&R.total===20&&els['rdy-t'].textContent==='1 of 20 activities'&&els['rdy-n'].textContent==='5%',`adult ${els['chip-adult'].textContent}, ${R.done}/${R.total}`);
   const el={textContent:''};api.countUp(el,87);report('record','score count-up lands on the exact score when motion is unavailable',el.textContent==='87');
   let v=0;navigator.vibrate=()=>{v++;return true;};api.setSetting('haptics','off');api.haptic(8);const a=v;api.setSetting('haptics','on');const pv=v;api.haptic(8);report('record','haptics follow the shared setting (off means no vibration; turning it on previews one buzz)',a===0&&pv===1&&v===2,`off ${a}, preview ${pv}, on ${v}`);delete navigator.vibrate;
   api.setSetting('text','large');report('record','settings saved under preconnect-settings and applied to the page',JSON.parse(store['preconnect-settings']).text==='large'&&global.document.documentElement.dataset.text==='large');
@@ -164,6 +164,45 @@ if(want.includes('pool')){// Pulled from the pool, BLS Ready 0.15.0: four patien
    report('pool','every drowning breath-order line (lesson, exam, pool scenario, pocket reference) says "to confirm with the 2025 course materials"',lines.length>=5&&lines.every(t=>/to confirm with the 2025 course materials/i.test(t)),`${lines.length} lines`);}
   {let lo=0,sh=0,t=0;for(const k of ['A','B','C','D']){V(k);global.__T=1000;const b=boot();off();b.api.runStart('pool');b.api.RUN().steps.forEach(s=>{if(s.k!=='choice')return;const L=s.o.map(x=>x[0].length),g=s.o.findIndex(x=>x[1]==='good');t++;if(L[g]===Math.max(...L))lo++;else if(L[g]===Math.min(...L))sh++;});}
    report('pool','pool decisions: the right answer is neither usually the longest nor the shortest',lo/t<=.45&&sh/t<=.45,`longest ${lo}, shortest ${sh} of ${t}`);}
+}
+
+if(want.includes('slow')){// She has a pulse, but it's slow (BLS Ready 0.16.0): a 3-year-old after a seizure, rescue breaths, rechecks, the under-60 rule
+  const V=k=>{global.window.FORCE_V={slow:k};};const off=()=>{delete global.window.FORCE_V;};const pl=(k,t,o)=>{V(k);const r=play('slow',t,o||{});off();return r;};
+  for(const k of ['A','B','C']){const r=[pl(k,0),pl(k,1)];report('slow',`patient ${k}: a competent run scores 100 on Guided and Recall`,r.every(x=>x.ok&&x.score===100),r.map(x=>x.score).join('/'));}
+  {const seen=new Set();for(let i=0;i<40;i++){global.__T=1000;const {api}=boot();api.runStart('slow');seen.add(api.RUN().V.v);}
+   global.__T=1000;const d=boot({'preconnect-drill':JSON.stringify({on:true,inst:'Max',roster:['Jo'],who:'Jo',start:new Date().toISOString()})});d.api.runStart('slow');
+   report('slow','patients are random (all three seen in 40 starts); a Drill Night always gets A, the pulse that comes back',seen.size===3&&d.api.RUN().V.key==='up',[...seen].join(''));}
+  {const a=pl('A',0),b=pl('B',0),c=pl('C',0);const has=(r,rx)=>rx.test(r.detail);
+   report('slow','only B and C reach compressions and the AED ("No shock advised"); A ends in the recovery position with no compressions',!/compressions ·/.test(a.detail)&&/Recovery position/.test(JSON.stringify(require('./bls_mock.js').boot().api.DEFS.slow.steps({key:'up'})))&&/30 compressions/.test(b.detail)&&/15 compressions/.test(c.detail)&&/No shock advised/.test(JSON.stringify(require('./bls_mock.js').boot().api.DEFS.slow.steps({key:'late'}))));
+   report('slow','the debrief shows the patient, her pulse at each check, the breath window, the average and the big breaths',has(b,/Patient Pulse falls at the first recheck/)&&has(b,/Her pulse at each check 70, then 50/)&&has(b,/Rescue breaths in the 2–3 s window 9 of 9/)&&has(b,/Average time between breaths 2\.5 s/)&&has(b,/Breaths too big 0/),b.detail.slice(0,240));
+   const last=c.runs.slice(-1)[0]||{};report('slow','the saved run carries the patient for the training record',last.id==='slow'&&last.kind==='scenario'&&last.v==='C'&&last.pt==='Pulse falls at the second recheck');}
+  {const r=pl('A',0,{big:3});report('slow','big breaths happen and cost 3 each; the third says her belly is swelling',r.ok&&r.score===91&&/belly is swelling/.test(r.detail),'score '+r.score);}
+  {const r=pl('A',0,{breathEvery:6});report('slow','breaths at the adult pace (every 6 s) cost points and say it is the adult pace',r.ok&&r.score<100&&/adult pace/.test(r.detail),'score '+r.score);}
+  {const r=pl('A',0,{breathEvery:1});report('slow','breaths every second are caught as too fast',r.ok&&r.score<100&&/too fast/.test(r.detail),'score '+r.score);}
+  // drive a run by hand to the card that matters
+  const run=(k,until,tier=0)=>{V(k);global.__T=1000;const B=boot();const {api}=B;api.setTier(tier);api.runStart('slow');off();const adv=s=>{global.__T+=s;};let g=0;
+    while(api.RUN()&&!until(api.RUN())&&g++<400){const R=api.RUN(),s=R.steps[R.i],st=R.st;
+      if(s.k==='info'){adv(1.5);api.runAct({r:'next'});}else if(s.k==='choice'){adv(2);if(st.solved)api.runAct({r:'next'});else api.runAct({r:'opt',i:String(s.o.findIndex(x=>x[1]==='good'))});}
+      else if(s.k==='seq'){adv(1);api.runAct({r:'seq',x:s.items[st.next]});}else if(s.k==='timer'){adv(1);api.runAct({r:'timer'});adv(7);api.runAct({r:'timer'});}
+      else if(s.k==='tap'){adv(st.taps.length?.545:1.2);api.runAct({r:'tap'});}else if(s.k==='breaths'){adv(1.1);api.runAct({r:'breath'});}else if(s.k==='rhythm'){adv(st.taps.length?2.5:1);api.runAct({r:'rhythm'});}}
+    return Object.assign(B,{adv});};
+  const cardOf=rx=>R=>{const s=R.steps[R.i];return s.k==='choice'&&rx.test(s.p)&&!R.st.solved;};
+  {const B=run('A',cardOf(/about 100/));const R=B.api.RUN(),s=R.steps[R.i];B.adv(2);B.api.runAct({r:'opt',i:String(s.o.findIndex(x=>/Start compressions/.test(x[0])))});
+   report('slow','compressions on a child with a pulse of 100 cost 10 and the feedback says her heart is pumping',R.score===90&&/pumping on its own/.test(R.msg.html),`score ${R.score}`);}
+  {const B=run('B',cardOf(/about 50/));const R=B.api.RUN(),s=R.steps[R.i],n0=R.steps.length;B.adv(2);B.api.runAct({r:'opt',i:String(s.o.findIndex(x=>x[1]==='later'))});
+   const spliced=R.steps.length===n0+4&&R.steps[R.i].k==='rhythm'&&R.score===90&&/do not wait/.test(R.errs[0]);let g=0,X;
+   while(X=B.api.RUN(),X&&!(X.steps[X.i].k==='choice'&&/about 40/.test(X.steps[X.i].p))&&g++<40){const s=X.steps[X.i];if(s.k==='rhythm'){B.adv(X.st.taps.length?2.5:1);B.api.runAct({r:'rhythm'});}else if(s.k==='info'){B.adv(1.5);B.api.runAct({r:'next'});}else if(s.k==='timer'){B.adv(1);B.api.runAct({r:'timer'});B.adv(7);B.api.runAct({r:'timer'});}}
+   const again=B.api.RUN()&&/about 40/.test(B.api.RUN().steps[B.api.RUN().i].p);
+   report('slow','keeping the breaths going with a pulse under 60 happens: costs 10, another round is played, the pulse falls to 40 and the CPR card comes back',spliced&&again,`spliced ${spliced}, again ${again}`);}
+  {const res=['B','C'].map(k=>{const B=run(k,R=>R.steps[R.i].k==='tap');const R=B.api.RUN();B.adv(14);B.api.runAct({r:'tap'});return R.score===95&&/finding her pulse under 60/.test(R.errs[0]||'');});
+   report('slow','a slow start to compressions after finding the pulse under 60 is timed on the real clock and costs 5 (B at the first recheck, C at the second)',res.every(Boolean),res.join(' '));}
+  {const B=run('A',R=>R.steps[R.i].k==='rhythm');const R=B.api.RUN();B.adv(1);B.api.runAct({r:'rhythm'});B.adv(.3);B.api.runAct({r:'rhythm',x:'big'});const fast=R.score===94;
+   const spy=el=>{let n=0,v=el.innerHTML;Object.defineProperty(el,'innerHTML',{get:()=>v,set:x=>{v=x;n++;},configurable:true});return ()=>n;};const cnt=spy(B.els['run-box']);for(let i=0;i<6;i++){B.adv(2.5);B.api.runAct({r:'rhythm'});}for(let i=0;i<10;i++){B.adv(.25);B.api.runUpd();}
+   report('slow','breath pads: a big breath that is also too fast costs for both; breathing and waiting rebuild nothing',fast&&cnt()===0,`score ${R.score}, rebuilds ${cnt()}`);}
+  {const {api}=boot();const all=['up','down','late'].map(k=>api.DEFS.slow.steps(api.DEFS&&{key:k,pt:'',trend:''}));
+   report('slow','2025 rules: rescue breaths timed at 2–3 s, under 60 with poor color means CPR, 15:2 with two, about 2 inches, child or adult pads not touching',all.every(st=>st.some(s=>s.k==='rhythm'&&s.lo===1.5&&s.hi===3.5&&s.n===10&&s.big))&&/under 60 with poor color/.test(JSON.stringify(all[1]))&&/15 compressions to 2 breaths/.test(JSON.stringify(all[2]))&&/about 2 inches/.test(JSON.stringify(all[1]))&&/adult pads not touching/.test(JSON.stringify(all[2])));
+   let lo=0,sh=0,t=0;all.forEach(st=>st.forEach(s=>{if(s.k!=='choice')return;const L=s.o.map(x=>x[0].length),g=s.o.findIndex(x=>x[1]==='good');t++;if(L[g]===Math.max(...L))lo++;else if(L[g]===Math.min(...L))sh++;}));
+   report('slow','decisions: the right answer is neither usually the longest nor the shortest',lo/t<=.45&&sh/t<=.45,`longest ${lo}, shortest ${sh} of ${t}`);}
 }
 if(want.includes('fuzz')){let crashes=0;const errs=[];const R=['next','opt','seq','timer','tap','breath','rhythm','alt','quit'];
   for(let run=0;run<60;run++){global.__T=1000;const {api}=boot();api.runStart(IDS[run%IDS.length]);

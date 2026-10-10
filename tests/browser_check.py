@@ -17,7 +17,7 @@ with sync_playwright() as p:
         pg.click('#h-learn'); pg.wait_for_timeout(150); rows.append((w, 'lesson', (pg.evaluate(OVER)+1000*pg.evaluate(SMALL)))); pg.click('[data-l="quit"]')
         pg.click('#h-set'); pg.wait_for_timeout(150); rows.append((w, 'settings', (pg.evaluate(OVER)+1000*pg.evaluate(SMALL)))); pg.click('#set-close')
         pg.evaluate("localStorage.setItem('preconnect-drill',JSON.stringify({on:true,inst:'Max',roster:['Jo','Sam'],who:'',start:new Date().toISOString()}))"); pg.goto(URL); pg.wait_for_timeout(300); rows.append((w, 'drill picker', (pg.evaluate(OVER)+1000*pg.evaluate(SMALL)))); pg.click('.pc-drill-name'); pg.wait_for_timeout(200); rows.append((w, 'drill bar', (pg.evaluate(OVER)+1000*pg.evaluate(SMALL)))); pg.evaluate("localStorage.removeItem('preconnect-drill')")
-        for rid in ('tempo','adult','infant','child2','bvm','chokeA','chokeI','team','opioid','baby','child','pool','crib'):
+        for rid in ('tempo','adult','infant','child2','bvm','chokeA','chokeI','team','opioid','baby','child','pool','crib','slow'):
             pg.goto(URL); pg.wait_for_timeout(150); pg.click(f'[data-run="{rid}"]'); pg.wait_for_timeout(150)
             for _ in range(6):   # tap through the first few steps with real clicks
                 for sel in ('[data-r="next"]','[data-r="opt"]','[data-r="seq"]','[data-r="timer"]','[data-r="tap"]','[data-r="alt"]','[data-r="rhythm"]','[data-r="breath"]'):
@@ -25,11 +25,12 @@ with sync_playwright() as p:
                     if en.count(): en.first.click(); break
                 pg.wait_for_timeout(80)
             rows.append((w, rid, (pg.evaluate(OVER)+1000*pg.evaluate(SMALL))))
-        fulls = [(r, None) for r in ('tempo','adult','infant','child2','bvm','chokeA','chokeI','team','opioid','baby','child','pool','crib')] if w == 390 else []
+        fulls = [(r, None) for r in ('tempo','adult','infant','child2','bvm','chokeA','chokeI','team','opioid','baby','child','pool','crib','slow')] if w == 390 else []
         fulls += [('pool', v) for v in 'ABCD']   # the four pool patients at both widths, pads placed by tapping their labels
+        fulls += [('slow', v) for v in 'ABC']   # the three slow-pulse patients at both widths, gentle breaths tapped on the real clock
         for rid, force in fulls:   # play every activity to the end with REAL clicks, finding buttons by their visible text
                 pg.goto(URL); pg.wait_for_timeout(150); pg.evaluate("window.__t=1000;NOW=()=>window.__t;")
-                if force: pg.evaluate(f"window.FORCE_V={{pool:'{force}'}}")
+                if force: pg.evaluate(f"window.FORCE_V={{{rid}:'{force}'}}")
                 pg.click(f'[data-run="{rid}"]'); ok = False; padrow = None
                 for _ in range(400):
                     if pg.is_visible('#doneov'): ok = True; break
@@ -48,7 +49,9 @@ with sync_playwright() as p:
                     if k == 'timer': adv(1); woke('[data-r="timer"]'); pg.click('[data-r="timer"]'); adv(7); pg.click('[data-r="timer"]'); continue
                     if k == 'tap': adv(0.545); woke('[data-r="tap"]'); pg.click('[data-r="tap"]'); continue
                     if k == 'breaths': adv(1.1); woke('[data-r="breath"]'); pg.click('[data-r="breath"]'); continue
-                    if k == 'rhythm': adv(pg.evaluate("RUN.steps[RUN.i].lo<3?2.5:6")); woke('[data-r="rhythm"]'); pg.click('[data-r="rhythm"]'); continue
+                    if k == 'rhythm':
+                        if force and rid == 'slow' and padrow is None: padrow = pg.evaluate(OVER)+1000*pg.evaluate(SMALL)
+                        lab = pg.evaluate("RUN.steps[RUN.i].label"); adv(pg.evaluate("RUN.st.taps.length?(RUN.steps[RUN.i].lo<3?2.5:6):1")); woke('#run-pad'); pg.locator('[data-r="rhythm"]', has_text=lab).first.click(); continue
                     if k == 'pads':
                         if padrow is None: padrow = pg.evaluate(OVER)+1000*pg.evaluate(SMALL)
                         key = pg.evaluate("RUN.V.key"); st = pg.evaluate("({on:RUN.st.on,po:RUN.st.patchOff,sh:RUN.st.shaved})")
@@ -63,7 +66,8 @@ with sync_playwright() as p:
                 score = pg.text_content('#done-s') if ok else '—'
                 tag = rid + (' ' + force if force else '')
                 rows.append((w, tag + ' (full)', 0 if ok and score == '100' else 99))
-                if force: rows.append((w, tag + ' pads', padrow if padrow is not None else 99)); rows.append((w, tag + ' result', pg.evaluate(OVER)+1000*pg.evaluate(SMALL)))
+                if force: rows.append((w, tag + (' pads' if rid == 'pool' else ' breaths'), padrow if padrow is not None else 99))
+                if force: rows.append((w, tag + ' result', pg.evaluate(OVER)+1000*pg.evaluate(SMALL)))
         pg.evaluate("localStorage.setItem('bls-ready',JSON.stringify({inst:true,runs:[]}))"); pg.goto(URL); pg.wait_for_timeout(200); pg.click('[data-run="tempo"]'); pg.wait_for_timeout(300); pg.click('#inst-fab'); pg.wait_for_timeout(200); rows.append((w, 'instructor', (pg.evaluate(OVER)+1000*pg.evaluate(SMALL)))); pg.click('#inst-close'); pg.evaluate("localStorage.removeItem('bls-ready')")
         pg.goto(URL+'?drill=special'); pg.wait_for_timeout(300); rows.append((w, 'daily link', (pg.evaluate(OVER)+1000*pg.evaluate(SMALL)) + (0 if pg.is_visible('#quizov') else 99)))
         pg.goto(URL); pg.wait_for_timeout(150); pg.click('#h-exam'); pg.wait_for_timeout(150); rows.append((w, 'exam', (pg.evaluate(OVER)+1000*pg.evaluate(SMALL))))

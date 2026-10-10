@@ -134,3 +134,12 @@ Foundation fixes: fonts served from this site, screen wake lock, finger-sized bu
 - Proven to fail (scratch copy): removing the patch penalty, the tag, the Continue guard, or the Check pads phase each fails its check.
 - `browser_check.py` plays the pool with each patient to the end at 320 and 390 px, tapping the pad spots and fix-ups by their labels, and measures the pad screen and the result screen.
 
+## Slow pulse (added October 10, 2026, `slow` section, BLS Ready 0.16.0)
+- Each of the three patients (the pulse comes back; it falls at the first recheck; it falls at the second) scores 100 on Guided and Recall; patients are random and a Drill Night gets A.
+- Only B and C reach compressions and the AED with "No shock advised"; A ends in the recovery position.
+- The debrief shows the patient, her pulse at each check, the breaths in the 2–3 s window, the average gap and the big breaths; the saved run carries the patient.
+- Mistakes happen and cost points: a big breath (3, the third says her belly is swelling), the adult pace (named), too fast, compressions at a pulse of 100 (10), keeping the breaths going under 60 (10, another round spliced in, the card returns with a lower pulse), more than 10 real seconds from the under-60 recheck to the first compression (5, in B and C).
+- The breath screen rebuilds nothing while you breathe or wait.
+- Proven to fail (scratch copy): removing the `later` splice, the big-breath penalty, the adult-pace message, the 2–3 s window, or C's timed recheck each fails its check.
+- `browser_check.py` plays all three patients to the end at 320 and 390 px, tapping the gentle breath by its label, and measures the breath screen and the result screen.
+

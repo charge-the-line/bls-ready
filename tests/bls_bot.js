@@ -10,7 +10,7 @@ function play(id,tier=0,o={}){global.__T=1000;const {api,els}=boot();api.setTier
     else if(s.k==='timer'){adv(1);act({r:'timer'});adv(o.pulse||7);act({r:'timer'});}
     else if(s.k==='tap'){if(!st.taps.length)adv(o.handsOff||1.2);else adv(cad*(o.jitter?(.8+Math.random()*.4):1));act({r:'tap'});}
     else if(s.k==='breaths'){adv(o.gap||1.1);act({r:'breath'});}
-    else if(s.k==='rhythm'){adv(st.taps.length?(o.breathEvery||(s.lo<3?2.5:6)):1);act({r:'rhythm'});}
+    else if(s.k==='rhythm'){adv(st.taps.length?(o.breathEvery||(s.lo<3?2.5:6)):1);o._b=(o._b||0)+1;act(s.big&&o.big&&o._b<=o.big?{r:'rhythm',x:'big'}:{r:'rhythm'});}
     else if(s.k==='pads'){adv(1.5);const V=s.v,plan=o.pads||(V.key==='patch'?['prep:patch','pad:ru','pad:ls']:V.key==='hair'?['prep:shave','pad:ru','pad:ls']:['pad:ru','pad:ls']);st._k=st._k||0;const [kind,z]=(plan[st._k++]||'pad:ls').split(':');act(kind==='pad'?{r:'pad',z}:{r:'prep',x:z});}
     else if(s.k==='alt'){adv(.6);act({r:'alt',x:st.inCyc<5?'a':'b'});}
     else{adv(1);act({r:'next'});}}
