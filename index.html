@@ -166,7 +166,7 @@ body.tv{max-width:1100px}.brand{color:var(--red2)}@media (min-width:1000px){body
 <div class="overlay hidden" id="infoov" style="z-index:15"><div class="box"><div id="info-b"></div><button class="go" id="info-close" style="width:100%;margin-top:10px">Close</button></div></div>
 <script>
 /* =================== core =================== */
-const APP_VERSION='0.16.2';
+const APP_VERSION='0.16.3';
 /* Screen wake lock (Milestone 1): keeps the phone from dimming or locking during a timed skill.
    On only while an activity runs: keepAwake(true) when it starts, keepAwake(false) back at the menu or on the result screen. */
 const WAKE={s:null,want:false};
@@ -226,7 +226,7 @@ const LESSON=[
  {t:'Choking — 2025 change',pts:['Adult or child who can\'t cough, speak, or breathe: 5 back blows, then 5 abdominal thrusts. Repeat.','Infant: 5 back blows, then 5 chest thrusts. Repeat. Never abdominal thrusts on an infant.','If they become unresponsive: call for help and start CPR. Look in the mouth before breaths — remove an object only if you can see it. No blind finger sweeps.'],
   q:'An adult is choking and can\'t speak. What\'s the 2025 sequence?',o:[['5 back blows, then 5 abdominal thrusts','good'],['Abdominal thrusts only, until it comes out','bad'],['5 chest thrusts, then a finger sweep','bad']],why:'2025 added back blows first for adults and children, alternating with abdominal thrusts.'}];
 let LS=null;
-function lessonStart(){keepAwake(true);pca('begin','bls','lesson',()=>LS?`slide-${LS.i+1}`:'');LS=pcLessonStart({slides:LESSON,point:x=>x.startsWith('2025')?'<b style="color:#ffc23d">2025:</b> '+esc(x.slice(5).replace(/^: /,'')):esc(x),onDone:lessonDone,onQuit:()=>{pca('abandon');LS=null;}});}
+function lessonStart(){keepAwake(true);pca('begin','bls','lesson',()=>LS?`slide-${LS.i+1}`:'');LS=pcLessonStart({slides:LESSON,point:x=>x.startsWith('2025')?'<b style="color:#ffc23d">2025:</b> '+esc(x.slice(5).replace(/^: /,'')):esc(x),onDone:lessonDone,onQuit:()=>{pca('abandon');keepAwake(false);LS=null;}});}
 function lessonRender(){pcLessonRender(LS);}
 function lessonAct(ds){pcLessonAct(LS,ds);}
 function lessonDone(score,right,n){pca('end',pca('bkt',score));record('lesson','lesson',score);
@@ -453,7 +453,7 @@ function runUpd(){if(!RUN||RUN.frozenAt!==null)return;const s=RUN.steps[RUN.i],s
   if(s.k==='pads'&&TIER===0){coach=st.check?'Pads not sticking: press them, then a second set or the razor':s.v.key==='patch'&&!st.patchOff?'Hint: a patch where a pad goes comes off first':s.v.key==='pacer'?'Hint: keep pads off the device bulge':s.v.key==='hair'&&!st.shaved?'Hint: thick hair can keep pads from sticking':'Upper right chest and left side';col='var(--soft)';}
   const ce=$('run-coach');if(ce){set('run-coach',coach);ce.style.color=col;}}
 function runAct(ds){if(!RUN)return;const s=RUN.steps[RUN.i],st=RUN.st,a=ds.r,t=NOW(),m=RUN.m;
-  if(a==='quit'){pca('abandon');pcMetro(0);$('runov').classList.add('hidden');RUN=null;instSync();return;}
+  if(a==='quit'){pca('abandon');pcMetro(0);keepAwake(false);$('runov').classList.add('hidden');RUN=null;instSync();return;}
   if(RUN.frozenAt!==null&&a!=='over')return;
   if(t<RUN.guard&&a!=='over')return;     // ignore momentum taps for half a second after a step changes
   if(a==='next'){if(s.k==='info'||(s.k==='choice'&&st.solved))stepNext();return;}   // only a step that shows Continue can be moved past
@@ -563,7 +563,7 @@ const DRILLS={
 let QZ=null;
 function quizStart(name,bank,n,kind,id){keepAwake(true);pca('begin','bls',kind==='exam'?'exam':'drill-'+id,()=>QZ&&QZ.qs?`question-${QZ.i+1}`:'');
   QZ=pcQuizStart({name,qs:shuf(bank).slice(0,n),kind,id,note:sc=>kind==='exam'?(sc>=85?'Solid — keep it sharp.':'Review the lesson and try again — aim for 85% or better.'):'',menuAction:kind==='exam'?'quit':'menu',menuLabel:kind==='exam'?'Done':'All drills',
-    onDone:sc=>{pca('end',pca('bkt',sc));record(kind,id,sc);},onQuit:()=>{pca('abandon');$('quizov').classList.add('hidden');QZ=null;}});}
+    onDone:sc=>{pca('end',pca('bkt',sc));record(kind,id,sc);keepAwake(false);},onQuit:()=>{pca('abandon');keepAwake(false);$('quizov').classList.add('hidden');QZ=null;}});}
 function quizQ(){pcQuizQ(QZ);}
 function quizAct(ds){const a=ds.q;if(a==='menu'){drillMenu();return;}if(a==='again'){const k=QZ.kind,id=QZ.id;k==='exam'?examStart():quizStart(DRILLS[id].name,DRILLS[id].bank(),DRILLS[id].bank().length,'drill',id);return;}
   if(a==='go'){quizStart(DRILLS[ds.k].name,DRILLS[ds.k].bank(),DRILLS[ds.k].bank().length,'drill',ds.k);return;}pcQuizAct(QZ,ds);}
@@ -617,6 +617,8 @@ $('inst-body').onclick=e=>{const b=e.target.closest&&e.target.closest('[data-inj
 $('inst-fab').onclick=()=>{if(INSTHOLD){INSTHOLD=false;instClose();}else instOpen();};$('inst-close').onclick=instClose;
 $('b-inst').onclick=()=>{INST=!INST;const p=load();p.inst=INST;save(p);instSync();};
 applySettings();settingsBind();INST=!!load().inst;pcDrillBind();showHome();instSync();setInterval(runTick,150);
+/* rule 15: the run's real clock stops while the screen is off and picks up where it was (the instructor's own freeze is left alone) */
+pcOnPause(()=>{if(RUN&&!INSTHOLD&&$('instov').classList.contains('hidden'))freezeRun();},()=>{if(RUN&&!INSTHOLD&&$('instov').classList.contains('hidden')&&RUN.frozenAt!==null){thawRun();say('Paused while the screen was off. Pick up where you were.','');runUpd();}});
 /* the home page's daily drill deep-links here: bls-ready/?drill=numbers */
 {const q=new URLSearchParams((typeof location!=='undefined'&&location.search)||'').get('drill');if(q&&DRILLS[q])quizStart(DRILLS[q].name,DRILLS[q].bank(),DRILLS[q].bank().length,'drill',q);}
 </script>
