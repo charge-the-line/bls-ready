@@ -13,6 +13,11 @@ if(want.includes('syntax')){try{new vm.Script(html.split('<script>')[1].split('<
   {const ver=(html.match(/APP_VERSION='([^']+)'/)||[])[1],sw=fs.readFileSync(path.join(__dirname,'..','sw.js'),'utf8'),cache=(sw.match(/CACHE = '([^']+)'/)||[])[1];
    report('syntax','service-worker cache matches app version',cache===`bls-ready-v${ver}`,`app ${ver}, cache ${cache}`);
 {const cm=fs.readFileSync(path.join(__dirname,'..','CLAUDE.md'),'utf8'),rd=fs.readFileSync(path.join(__dirname,'..','README.txt'),'utf8');const cv=(cm.match(/\*\*Current version: ([\d.]+)/)||[])[1],av=(html.match(/APP_VERSION='([^']+)'/)||[])[1];
+{// milestone 4b: every module's home opens in the same order: title with the version, readiness, What this is, the lesson, the tool grid, Difficulty, the Drill night row, then the activity lists
+  const home=html.slice(html.indexOf('id="home"'),html.indexOf('id="runov"'));const at=re=>{const m=re.exec(home);return m?m.index:-1;};
+  const order=[/id="rdy"/,/What this is/,/id="h-learn"/,/id="h-drills"/,/class="sec">Difficulty</,/class="tiers"/,/id="b-inst"/,/class="sec">Practice the skills</].map(at);
+  report('syntax','the home opens in the standard order: readiness, What this is, the lesson, the tool grid, Difficulty, Drill night, then the lists (milestone 4b)',order.every(x=>x>=0)&&order.every((x,i)=>i===0||x>order[i-1]),order.join(' < '));
+  report('syntax','the title line carries the shipped version (milestone 4b)',new RegExp('>v'+(html.match(/APP_VERSION='([^']+)'/)||[])[1].replace(/\./g,'\\.')+'<').test(html),'');}
  report('syntax','the briefing names the shipped version and the README lists the core and the fonts (final sweep M3)',cv===av&&/preconnect-core\.js/.test(rd)&&/fonts\//.test(rd),`briefing ${cv}, app ${av}`);}
 {// final sweep M4 (layout and touch): the page's own CSS declares no font size under 13 px (the caption floor; sentences are 15 px, measured for real by browser_check.py), and the shared core carries the platform rules
   const css=[...html.matchAll(/<style[^>]*>([\s\S]*?)<\/style>/g)].map(m=>m[1]).join('\n');const low=[...css.matchAll(/font-size:\s*(\d+(?:\.\d+)?)px/g)].map(m=>+m[1]).filter(v=>v<13);

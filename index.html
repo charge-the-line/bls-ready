@@ -108,12 +108,18 @@ body.tv{max-width:1100px}.brand{color:var(--red2)}@media (min-width:1000px){body
 <div id="pc-drill" class="pc-drillbar hidden" data-hub="../"></div>
 <div id="home">
   <div class="flex" style="margin:0 0 8px"><a href="../" style="display:inline-flex;align-items:center;min-height:44px;font-family:'Saira Condensed';font-size:15px;font-weight:600;letter-spacing:1px;color:#ff8a3d;text-decoration:none">◂ PRECONNECT</a><div class="sp"></div><a href="../feedback.html?from=bls" style="display:inline-flex;align-items:center;min-height:44px;font-size:14px;font-weight:700;color:var(--soft);text-decoration:none;margin-right:12px">Feedback</a><button class="gear" id="h-set">Settings</button></div>
-  <div class="top"><div><div class="brand" style="font-size:34px;letter-spacing:3px;color:var(--acc)">BLS READY</div><h1 style="font-size:19px;font-weight:400;font-family:'Atkinson Hyperlegible',system-ui,sans-serif;margin-top:2px">High-quality CPR, every time.</h1></div></div>
+  <div class="top"><div><div class="brand" style="font-size:34px;letter-spacing:3px;color:var(--acc)">BLS READY</div><h1 style="font-size:19px;font-weight:400;font-family:'Atkinson Hyperlegible',system-ui,sans-serif;margin-top:2px">High-quality CPR, every time. <span class="ver" style="font-size:15px;color:var(--soft)">v0.17.0</span></h1></div></div>
   <div class="card rdy" id="rdy"><div class="flex"><div><div class="small">Your readiness</div><b id="rdy-t" style="display:block;font-family:'Saira Condensed';font-size:22px;line-height:1.05"></b><div class="small" id="rdy-s"></div></div><div class="sp"></div><div class="num" id="rdy-n"></div></div><div class="bar" style="height:8px;margin-top:10px;background:var(--line)"><div id="rdy-bar" style="background:var(--acc);transition:width .6s ease-out"></div></div></div>
   <div class="card"><div class="small">What this is</div><p style="margin:4px 0 0;font-size:15px;line-height:1.45">CPR and basic life support practice for the fire service, modeled on the AHA BLS Provider course and the 2025 guidelines: a lesson, timed skill stations, team scenarios and exam practice. <b>Practice, not certification. Not affiliated with the American Heart Association.</b></p></div>
-  <div class="sec">1 · Learn</div>
   <button class="scen" id="h-learn"><span class="chip dim" id="chip-lesson">—</span><b>The lesson</b><span>15 short slides in course order, each with a check · includes the 2025 changes and special situations</span></button>
-  <div class="sec">2 · Practice the skills</div>
+  <div class="row" style="margin:10px 0 12px"><button id="h-drills">Quick drills</button><button id="h-prog">My progress</button><button id="h-ref">Pocket reference</button><button id="h-about">About this app</button></div>
+  <div class="sec">Difficulty</div>
+  <div class="tiers" style="grid-template-columns:repeat(2,1fr)"><button data-tier="0">Guided</button><button data-tier="1">Recall</button></div>
+  <p class="stat" id="tierhelp" style="margin:0 0 10px"></p>
+  <div class="sec">Drill night</div>
+  <button id="b-inst" style="width:100%;margin-bottom:8px">Instructor mode: off</button>
+  <p class="stat" style="margin:0 0 6px">Live injects and a freeze while a station or scenario runs. On by itself during a Drill Night.</p>
+  <div class="sec">Practice the skills</div>
   <button class="scen" data-run="tempo"><span class="chip dim" id="chip-tempo">—</span><b>Compressions and breaths</b><span>Tap the tempo: 30 compressions at 100–120, two breaths, back on the chest in under 10 seconds</span></button>
   <button class="scen" data-run="adult"><span class="chip dim" id="chip-adult">—</span><b>Adult CPR and AED</b><span>Skills-test style: scene, check, call, compress, breathe, AED — timed on a real clock</span></button>
   <button class="scen" data-run="infant"><span class="chip dim" id="chip-infant">—</span><b>Infant CPR — two rescuers</b><span>The 2025 technique, 15:2, and back on the chest fast</span></button>
@@ -121,7 +127,7 @@ body.tv{max-width:1100px}.brand{color:var(--red2)}@media (min-width:1000px){body
   <button class="scen" data-run="bvm"><span class="chip dim" id="chip-bvm">—</span><b>Bag-mask breaths</b><span>Seal it, then one breath every 6 seconds — not faster</span></button>
   <button class="scen" data-run="chokeA"><span class="chip dim" id="chip-chokeA">—</span><b>Choking — adult or child</b><span>2025: back blows first, then abdominal thrusts</span></button>
   <button class="scen" data-run="chokeI"><span class="chip dim" id="chip-chokeI">—</span><b>Choking — infant</b><span>Back blows and chest thrusts — never abdominal thrusts</span></button>
-  <div class="sec">3 · Team scenarios</div>
+  <div class="sec">Team scenarios</div>
   <button class="scen" data-run="team"><span class="chip dim" id="chip-team">—</span><b>Collapse in the hallway</b><span>Two rescuers, an AED, and a switch every two minutes</span></button>
   <button class="scen" data-run="opioid"><span class="chip dim" id="chip-opioid">—</span><b>Found in the restroom</b><span>A pulse but not breathing — then it changes</span></button>
   <button class="scen" data-run="baby"><span class="chip dim" id="chip-baby">—</span><b>Infant at the daycare</b><span>One rescuer, then two — the ratio changes</span></button>
@@ -129,14 +135,8 @@ body.tv{max-width:1100px}.brand{color:var(--red2)}@media (min-width:1000px){body
   <button class="scen" data-run="pool"><span class="chip dim" id="chip-pool">—</span><b>Pulled from the pool</b><span>Drowning, then the AED: water, a patch, a device, chest hair</span></button>
   <button class="scen" data-run="crib"><span class="chip dim" id="chip-crib">—</span><b>Not breathing in the crib</b><span>An infant with a pulse — until the pulse is not enough</span></button>
   <button class="scen" data-run="slow"><span class="chip dim" id="chip-slow">—</span><b>She has a pulse, but it's slow</b><span>A 3-year-old after a seizure: breaths every 2–3 seconds, recheck, and the under-60 rule</span></button>
-  <div class="tiers" style="grid-template-columns:repeat(2,1fr)"><button data-tier="0">Guided</button><button data-tier="1">Recall</button></div>
-  <p class="stat" id="tierhelp" style="margin:0 0 10px"></p>
-  <div class="sec">Drill night</div>
-  <button id="b-inst" style="width:100%;margin-bottom:8px">Instructor mode: off</button>
-  <p class="stat" style="margin:0 0 6px">Live injects and a freeze while a station or scenario runs. On by itself during a Drill Night.</p>
-  <div class="sec">4 · Test yourself</div>
-  <div class="row"><button id="h-exam" class="go">Exam practice</button><button id="h-drills">Quick drills</button><button id="h-ref">Pocket reference</button><button id="h-prog">My progress</button></div>
-  <button id="h-about" style="width:100%;margin-top:6px">About this app</button>
+  <div class="sec">Test yourself</div>
+  <button class="scen" id="h-exam"><span class="chip dim" id="chip-exam">—</span><b>Exam practice</b><span>15 questions from a bank of 36, a different set each time · a "why" line after every answer</span></button>
   <p class="legal">A practice tool. It does not replace an official course or issue certification. Take an official in-person BLS course, such as the American Heart Association's. Not affiliated with or endorsed by the American Heart Association.</p>
 </div>
 <div class="overlay hidden" id="runov" style="z-index:12"><div class="box" id="run-box"></div></div>
@@ -166,7 +166,7 @@ body.tv{max-width:1100px}.brand{color:var(--red2)}@media (min-width:1000px){body
 <div class="overlay hidden" id="infoov" style="z-index:15"><div class="box"><div id="info-b"></div><button class="go" id="info-close" style="width:100%;margin-top:10px">Close</button></div></div>
 <script>
 /* =================== core =================== */
-const APP_VERSION='0.16.5';
+const APP_VERSION='0.17.0';
 /* Screen wake lock (Milestone 1): keeps the phone from dimming or locking during a timed skill.
    On only while an activity runs: keepAwake(true) when it starts, keepAwake(false) back at the menu or on the result screen. */
 const WAKE={s:null,want:false};
@@ -589,7 +589,7 @@ const ACTS=[['lesson','lesson'],...['tempo','adult','infant','child2','bvm','cho
 function readiness(){const R=load().runs||[];const best={};R.forEach(r=>{const k=r.kind+':'+r.id;best[k]=Math.max(best[k]||0,+r.score||0);});const done=ACTS.filter(([k,i])=>best[k+':'+i]!==undefined).length;return {done,total:ACTS.length,pct:Math.round(done/ACTS.length*100),best,exam:best['exam:exam']};}
 function homeRender(){const R=readiness();const runs=load().runs||[];let ndue=0;const chip=(id,k)=>{const e=$('chip-'+id);if(!e)return;const b=R.best[k+':'+id];const sp=pcSpacing(runs.filter(r=>r.kind===k&&r.id===id));const dueNow=sp.status==='due'||sp.status==='missed';if(dueNow)ndue++;
     const t=b===undefined?'—':dueNow?(sp.status==='missed'?'Again':'Due'):String(b);if(e.textContent!==t)e.textContent=t;e.classList.toggle('dim',b===undefined);e.classList.toggle('due',dueNow);};
-  chip('lesson','lesson');['tempo','adult','infant','bvm','chokeA','chokeI'].forEach(i=>chip(i,'station'));['team','opioid','baby','child'].forEach(i=>chip(i,'scenario'));
+  ACTS.forEach(([k,i])=>chip(i,k));
   const t=`${R.done} of ${R.total} activities`;if($('rdy-t').textContent!==t)$('rdy-t').textContent=t;
   const sub=R.done?`${ndue?ndue+' due for review · ':''}${R.exam!==undefined?'exam practice best '+R.exam+'%':'exam practice not yet'} · ${TIER===0?'Guided':'Recall'} mode`:'Start anywhere. Your best scores show up here.';if($('rdy-s').textContent!==sub)$('rdy-s').textContent=sub;
   const n=R.pct+'%';if($('rdy-n').textContent!==n)$('rdy-n').textContent=n;const bar=$('rdy-bar');if(bar&&bar.style)bar.style.width=R.pct+'%';}
