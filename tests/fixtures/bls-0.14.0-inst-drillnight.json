@@ -1,0 +1,62 @@
+{
+ "runs": [
+  {
+   "kind": "station",
+   "id": "adult",
+   "score": 100,
+   "d": "2026-09-30T11:41:10.360Z",
+   "tier": 1
+  },
+  {
+   "kind": "exam",
+   "id": "exam",
+   "score": 87,
+   "d": "2026-10-01T11:41:10.360Z",
+   "tier": 0
+  },
+  {
+   "kind": "drill",
+   "id": "numbers",
+   "score": 100,
+   "d": "2026-10-02T11:41:10.360Z",
+   "tier": 0
+  },
+  {
+   "kind": "lesson",
+   "id": "lesson",
+   "score": 92,
+   "d": "2026-10-03T11:41:10.360Z",
+   "tier": 0
+  },
+  {
+   "kind": "scenario",
+   "id": "team",
+   "score": 95,
+   "d": "2026-10-04T11:41:10.360Z",
+   "tier": 0
+  },
+  {
+   "kind": "scenario",
+   "id": "opioid",
+   "score": 90,
+   "d": "2026-10-09T11:41:10.360Z",
+   "tier": 0,
+   "inst": 1
+  },
+  {
+   "kind": "station",
+   "id": "tempo",
+   "score": 88,
+   "d": "2026-10-10T10:29:10.360Z",
+   "tier": 0,
+   "who": [
+    "Jo"
+   ],
+   "inst": "Capt. Lee",
+   "night": "2026-10-10T09:17:10.360Z"
+  }
+ ],
+ "name": "Max",
+ "dept": "Monitor Twp FD",
+ "inst": false
+}

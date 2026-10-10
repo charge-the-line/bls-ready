@@ -166,7 +166,7 @@ body.tv{max-width:1100px}.brand{color:var(--red2)}@media (min-width:1000px){body
 <div class="overlay hidden" id="infoov" style="z-index:15"><div class="box"><div id="info-b"></div><button class="go" id="info-close" style="width:100%;margin-top:10px">Close</button></div></div>
 <script>
 /* =================== core =================== */
-const APP_VERSION='0.16.1';
+const APP_VERSION='0.16.2';
 /* Screen wake lock (Milestone 1): keeps the phone from dimming or locking during a timed skill.
    On only while an activity runs: keepAwake(true) when it starts, keepAwake(false) back at the menu or on the result screen. */
 const WAKE={s:null,want:false};
@@ -183,7 +183,7 @@ const shuf=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math
 let TIER=0,NOW=()=>performance.now()/1000;
 const pca=(f,...a)=>{try{const P=typeof window!=='undefined'&&window.PCA;if(P&&P[f])return P[f](...a);}catch(e){}};
 const KEY='bls-ready';
-function load(){try{return JSON.parse(localStorage.getItem(KEY))||{runs:[]};}catch(e){return {runs:[]};}}
+function load(){let p=null;try{p=JSON.parse(localStorage.getItem(KEY));}catch(e){}if(!p||typeof p!=='object'||Array.isArray(p))p={runs:[]};p.runs=Array.isArray(p.runs)?p.runs.filter(r=>r&&typeof r==='object'):[];return p;}/* wrong-shape data (a bad backup) never bricks the page */
 function save(p){try{localStorage.setItem(KEY,JSON.stringify(p));}catch(e){}}
 function record(kind,id,score,extra){const p=load();p.runs=(p.runs||[]).concat([pcDrillStamp(Object.assign({kind,id,score,d:new Date().toISOString(),tier:TIER},extra||{}))]).slice(-500);save(p);}
 function showHome(){keepAwake(false);['runov','lessonov','quizov','doneov'].forEach(i=>$(i).classList.add('hidden'));document.querySelectorAll('[data-tier]').forEach(b=>b.classList.toggle('on',+b.dataset.tier===TIER));$('tierhelp').textContent=['Guided: hints and coaching as you go.','Recall: no hints. Run it like the real skills test.'][TIER];if(typeof homeRender==='function')homeRender();}
@@ -581,9 +581,9 @@ $('h-prog').onclick=()=>{const p=load();const R=p.runs||[];const best=(k,id)=>{c
    <div class="sec">SCENARIOS</div>${['team','opioid','baby','child'].map(i=>line(DEFS[i].name,best('scenario',i))).join('')}<div class="sec">TESTS</div>${line('Exam practice',best('exam','exam'))}${Object.keys(DRILLS).map(k=>line(DRILLS[k].name,best('drill',k))).join('')}
    <button id="p-csv" style="width:100%;margin-top:10px">Download practice record (CSV)</button>`);
   $('p-csv').onclick=()=>{const q=load();q.name=$('p-name').value.trim();q.dept=$('p-dept').value.trim();save(q);const nm={lesson:'Lesson',station:'Skill',scenario:'Scenario',exam:'Exam practice',drill:'Drill'};
-    const label=r=>r.kind==='lesson'?'The lesson':r.kind==='exam'?'Exam practice':r.kind==='drill'?DRILLS[r.id].name:DEFS[r.id].name;
+    const label=r=>r.kind==='lesson'?'The lesson':r.kind==='exam'?'Exam practice':r.kind==='drill'?(DRILLS[r.id]||{}).name||r.id:(DEFS[r.id]||{}).name||r.id;/* an id this page doesn't know (a newer backup) still exports */
     const rows=[['Name','Organization','Type','Activity','Date','Mode','Score']].concat((q.runs||[]).map(r=>[q.name||'',q.dept||'',nm[r.kind],label(r),r.d.slice(0,16).replace('T',' '),['Guided','Recall'][r.tier]||'',r.score]));
-    const csv=rows.map(r=>r.map(v=>`"${String(v).replace(/"/g,'""')}"`).join(',')).join('\n');try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='bls-ready-practice-record.csv';a.click();}catch(e){}};};
+    const csv=pcCsv(rows);/* the core quotes every cell and defuses =, +, -, @ formulas */try{const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv'}));a.download='bls-ready-practice-record.csv';a.click();}catch(e){}};};
 /* =================== home: readiness and best scores (Milestone 2) =================== */
 const ACTS=[['lesson','lesson'],...['tempo','adult','infant','child2','bvm','chokeA','chokeI'].map(i=>['station',i]),...['team','opioid','baby','child','pool','crib','slow'].map(i=>['scenario',i]),['exam','exam'],...Object.keys(DRILLS).map(k=>['drill',k])];
 function readiness(){const R=load().runs||[];const best={};R.forEach(r=>{const k=r.kind+':'+r.id;best[k]=Math.max(best[k]||0,+r.score||0);});const done=ACTS.filter(([k,i])=>best[k+':'+i]!==undefined).length;return {done,total:ACTS.length,pct:Math.round(done/ACTS.length*100),best,exam:best['exam:exam']};}
