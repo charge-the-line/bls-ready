@@ -143,3 +143,5 @@ Foundation fixes: fonts served from this site, screen wake lock, finger-sized bu
 - Proven to fail (scratch copy): removing the `later` splice, the big-breath penalty, the adult-pace message, the 2–3 s window, or C's timed recheck each fails its check.
 - `browser_check.py` plays all three patients to the end at 320 and 390 px, tapping the gentle breath by its label, and measures the breath screen and the result screen.
 
+## Offline helper (final sweep milestone 1, October 10, 2026)
+- `syntax`: the page and the shared core are network-first with a short wait (`NET_WAIT` ≤ 4 s, `Promise.race`), only 2xx answers are saved, installs use `cache:'reload'`, index.html is cached once. Proven in a browser (scratch): the first launch after a deploy runs the new page with the new core; a hanging network shows the saved page in under 4 s; a 404 serves the saved page.
