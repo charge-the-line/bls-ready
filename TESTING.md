@@ -33,6 +33,7 @@ python3 tests/browser_check.py
 | `record` | Results save; the CSV export works |
 | `smooth` | No rebuilds while tapping; momentum taps ignored; overshoot never becomes breaths; feedback stays visible; Guided coaches and Recall doesn't; debrief lists your steps |
 | `fuzz` | Random actions never crash |
+| `voice` | One voice (milestone 5): the button standard, Next walks the home list's order, the links under every result, tier help from the core, the to-confirm chip in the pocket reference, About's version line, the hub name store |
 | `browser_check.py` | Every screen at 320 and 390 px, **and every activity played to the end with real taps on buttons found by their visible text** |
 
 Verified to catch planted bugs: two-finger technique marked correct, long pauses not penalized, and an over-long pulse check allowed all fail in `run_all.js`. Broken button markup fails in `browser_check.py`.
