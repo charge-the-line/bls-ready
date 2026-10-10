@@ -12,6 +12,8 @@ const IDS=['tempo','adult','infant','child2','bvm','chokeA','chokeI','team','opi
 if(want.includes('syntax')){try{new vm.Script(html.split('<script>')[1].split('</script>')[0]);report('syntax','index.html script compiles',true);}catch(e){report('syntax','index.html script compiles',false,e.message);}
   {const ver=(html.match(/APP_VERSION='([^']+)'/)||[])[1],sw=fs.readFileSync(path.join(__dirname,'..','sw.js'),'utf8'),cache=(sw.match(/CACHE = '([^']+)'/)||[])[1];
    report('syntax','service-worker cache matches app version',cache===`bls-ready-v${ver}`,`app ${ver}, cache ${cache}`);
+{const cm=fs.readFileSync(path.join(__dirname,'..','CLAUDE.md'),'utf8'),rd=fs.readFileSync(path.join(__dirname,'..','README.txt'),'utf8');const cv=(cm.match(/\*\*Current version: ([\d.]+)/)||[])[1],av=(html.match(/APP_VERSION='([^']+)'/)||[])[1];
+ report('syntax','the briefing names the shipped version and the README lists the core and the fonts (final sweep M3)',cv===av&&/preconnect-core\.js/.test(rd)&&/fonts\//.test(rd),`briefing ${cv}, app ${av}`);}
   {// Milestone 3: the shared core is loaded before the app, listed in the offline cache, and its header hash matches its body (edit without re-hashing = fail)
    const cp=path.join(__dirname,'..','preconnect-core.js');const ct=fs.existsSync(cp)?fs.readFileSync(cp,'utf8'):'';const first=ct.split('\n')[0]||'';const body=ct.slice(first.length+1);
    const want=(first.match(/sha256:([0-9a-f]{64})/)||[])[1];const got=require('crypto').createHash('sha256').update(body,'utf8').digest('hex');const sw4=fs.readFileSync(path.join(__dirname,'..','sw.js'),'utf8');
@@ -208,6 +210,10 @@ if(want.includes('slow')){// She has a pulse, but it's slow (BLS Ready 0.16.0): 
    report('slow','decisions: the right answer is neither usually the longest nor the shortest',lo/t<=.45&&sh/t<=.45,`longest ${lo}, shortest ${sh} of ${t}`);}
 }
 if(want.includes('record')){// final sweep M1: CSV cells safe, wrong-shape data never bricks the page, older saved-data formats still load
+  {// final sweep M3: My progress lists every one of the 20 activities, built from ACTS (it used to hard-code 6 stations and 4 scenarios)
+   const {api,els}=boot();api.showHome();els['h-prog'].onclick();const h=els['info-b'].innerHTML;const rows=(h.match(/class="mrow"/g)||[]).length;
+   const names=['Child CPR — two rescuers','Pulled from the pool','Not breathing in the crib',"She has a pulse, but it's slow"].filter(n=>h.includes(n.replace(/'/g,'&#39;'))||h.includes(n));
+   report('record','My progress lists all 20 activities from ACTS, including the child two-rescuer station and the pool, crib and slow-pulse scenarios',rows===api.ACTS.length&&names.length===4,`${rows} rows of ${api.ACTS.length}, found ${names.length}/4 newer names`);}
   {global.__T=1000;const {api,els}=boot({'bls-ready':JSON.stringify({runs:[{kind:'lesson',id:'lesson',score:90,d:'2026-10-01T00:00:00Z',tier:0},{kind:'scenario',id:'ghost',score:50,d:'2026-10-02T00:00:00Z',tier:0}]})});api.showHome();els['h-prog'].onclick();els['p-name'].value='=HYPERLINK("http://x","x")';els['p-dept'].value='@SUM(1)';global.__csv='';els['p-csv'].onclick();const csv=global.__csv||'';
    report('record','CSV: a name typed as a formula is defused with a leading apostrophe, and an unknown activity id still exports',/"'=HYPERLINK\(""http:\/\/x"",""x""\)","'@SUM\(1\)"/.test(csv)&&/"ghost"/.test(csv)&&csv.split('\n').length===3,csv.split('\n')[1]);}
   {let ok=true,why='';for(const bad of ['[]','5','{"runs":5}','{"runs":[null,{"kind":"lesson","id":"lesson","score":50,"d":"2026-10-01T00:00:00Z","tier":0}]}']){try{global.__T=1000;const b=boot({'bls-ready':bad});b.api.showHome();const p=b.api.load();if(!Array.isArray(p.runs)||p.runs.some(r=>!r||typeof r!=='object'))throw new Error('runs not clean for '+bad);b.api.runStart('tempo');b.api.runFinish();if(b.api.load().runs.slice(-1)[0].id!=='tempo')throw new Error('record failed for '+bad);}catch(e){ok=false;why=e.message;}}

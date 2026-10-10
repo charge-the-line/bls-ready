@@ -26,14 +26,14 @@ python3 tests/browser_check.py
 | `content` | **2025 guideline facts can't regress:** two-finger infant compressions are never a right answer; choking teaches back blows first; rate, depth, and ratios are correct; the pulse check is 5–10 seconds |
 | `balance` | The right answer is neither usually the longest nor usually the shortest (all 66 questions) |
 | `lesson` | All 14 slides work and score correctly |
-| `clean` | All 10 activities score 100 for a competent rescuer (110/min, 7-second checks, quick breaths) |
+| `clean` | Every activity scores 100 for a competent rescuer (110/min, 7-second checks, quick breaths) |
 | `mistakes` | Rate 135 or 90, a 12- or 3-second pulse check, a 14-second pause, fast breaths, bagging every 3 or 10 seconds, out-of-order steps, and wrong decisions are all caught |
 | `jitter` | Human-like uneven tapping at a good average isn't unfairly punished |
 | `quiz` | Exam practice scores 100 when right and 0 when wrong; every question has three distinct options |
 | `record` | Results save; the CSV export works |
 | `smooth` | No rebuilds while tapping; momentum taps ignored; overshoot never becomes breaths; feedback stays visible; Guided coaches and Recall doesn't; debrief lists your steps |
 | `fuzz` | Random actions never crash |
-| `browser_check.py` | Every screen at 320 and 390 px, **and all 10 activities played to the end with real taps on buttons found by their visible text** |
+| `browser_check.py` | Every screen at 320 and 390 px, **and every activity played to the end with real taps on buttons found by their visible text** |
 
 Verified to catch planted bugs: two-finger technique marked correct, long pauses not penalized, and an over-long pulse check allowed all fail in `run_all.js`. Broken button markup fails in `browser_check.py`.
 
@@ -154,3 +154,7 @@ Foundation fixes: fonts served from this site, screen wake lock, finger-sized bu
 ## Rule 15 and the wake lock (final sweep milestone 2, October 10, 2026)
 - The real clock stops while the screen is off: tests call `pcPauseHide()`, advance the fake clock, `pcPauseShow()`, and assert no penalty and no metric change (and that an instructor freeze is left alone where there is one). Proven to fail (scratch): removing the hookup (BLS Ready) or scoring on the wall clock again (Bleed Control) fails the check.
 - The wake lock is released on every quit path added in this milestone (stubbed `navigator.wakeLock`, one request per one release).
+
+## Truth and counts (final sweep milestone 3, October 10, 2026)
+- `record`: My progress lists every activity in `ACTS` (20 rows), including the four that the old hard-coded lists left out.
+- `syntax`: the docs guard (CLAUDE.md "Current version" equals `APP_VERSION`; README.txt names `preconnect-core.js` and `fonts/`).
