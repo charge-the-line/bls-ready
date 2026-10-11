@@ -159,3 +159,6 @@ Foundation fixes: fonts served from this site, screen wake lock, finger-sized bu
 ## Truth and counts (final sweep milestone 3, October 10, 2026)
 - `record`: My progress lists every activity in `ACTS` (20 rows), including the four that the old hard-coded lists left out.
 - `syntax`: the docs guard (CLAUDE.md "Current version" equals `APP_VERSION`; README.txt names `preconnect-core.js` and `fonts/`).
+
+## Every activity with real taps (milestone 10)
+`PC_ALL=1 python3 tests/browser_check.py` (milestone 10, lean finish) also plays the lesson, the exam and the four drills to the end with real taps at 390 px (the stations and scenarios already play to the end on every run); about 10 minutes more. Run it before a release.

@@ -3,7 +3,7 @@ import os
 """Real-browser check (optional). Needs: pip install playwright && playwright install chromium
 Opens the home screen, the lesson, every skill station and scenario at phone sizes, taps real buttons,
 and fails on any JavaScript error or anything off-screen.   Usage: python3 tests/browser_check.py"""
-import pathlib, sys
+import pathlib, re, sys
 from playwright.sync_api import sync_playwright
 URL = (pathlib.Path(__file__).resolve().parent.parent / 'index.html').as_uri()
 OVER = "(()=>{let m=0;const vis=e=>e.checkVisibility?e.checkVisibility({visibilityProperty:true}):e.offsetParent!==null;document.querySelectorAll('body *').forEach(e=>{if(!vis(e))return;const r=e.getBoundingClientRect();if(r.width<1||r.height<1)return;m=Math.max(m,r.right-window.innerWidth);});return Math.round(m);})()"   # fixed elements count too (the hub header slipped past offsetParent)
@@ -15,14 +15,14 @@ errs, rows = [], []
 def lesson_full(pg, open_sel):   # the lesson to the end: the right answer tapped by its visible text, then Next / Finish
     pg.click(open_sel); pg.wait_for_timeout(300)
     for _ in range(40):
-        if not pg.evaluate("!!(window.LS&&LS.cfg)"): break
+        if not pg.evaluate("(typeof LS!=='undefined'&&!!(LS&&LS.cfg))"): break
         good = pg.evaluate("LS.cfg.slides[LS.i].o.find(o=>o[1]==='good')[0]")
         pg.locator('[data-l="ans"]', has_text=re.compile('^' + re.escape(good) + '$')).first.click(delay=120); pg.wait_for_timeout(150)
         pg.click('#l-next', delay=120); pg.wait_for_timeout(250)
-    return pg.evaluate("!(window.LS&&LS.cfg)")
+    return pg.evaluate("!(typeof LS!=='undefined'&&LS&&LS.cfg)")
 def quiz_full(pg, q='QZ', ans='[data-q="ans"]', nxt='[data-q="next"]'):   # a quiz to the end: the right answer by its visible text, then Next / Results
     for _ in range(40):
-        if not pg.evaluate("!!(window.%s&&%s.qs&&%s.i<%s.qs.length)" % (q, q, q, q)): break
+        if not pg.evaluate("(typeof %s!=='undefined'&&!!(%s&&%s.qs&&%s.i<%s.qs.length))" % (q, q, q, q, q)): break
         a = pg.evaluate("%s.qs[%s.i].a" % (q, q)); pg.locator(ans, has_text=re.compile('^' + re.escape(a) + '$')).first.click(delay=120); pg.wait_for_timeout(120)
         pg.locator(nxt).first.click(delay=120); pg.wait_for_timeout(120)
     pg.wait_for_timeout(300)
