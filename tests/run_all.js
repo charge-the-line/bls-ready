@@ -272,4 +272,9 @@ if(want.includes('fuzz')){let crashes=0;const errs=[];const R=['next','opt','seq
 {// Continue opens the activity itself (milestone 8): ?run= a station or scenario, ?exam=1 the exam, ?lesson=1 the lesson
  const {boot}=require('./bls_mock.js');global.__loc={search:'?run=pool'};const a=boot();global.__loc={search:'?exam=1'};const b=boot();global.__loc={search:'?lesson=1'};const c=boot();global.__loc={search:'?run=nope'};const d=boot();global.__loc=undefined;
  report('voice','deep links open the activity itself: a run, the exam and the lesson; an unknown id is ignored',a.api.RUN()&&a.api.RUN().id==='pool'&&b.api.QZ()&&b.api.QZ().kind==='exam'&&c.api.LS()!==null&&!d.api.RUN(),`run ${a.api.RUN()&&a.api.RUN().id} exam ${b.api.QZ()&&b.api.QZ().kind} lesson ${c.api.LS()!==null}`);}
+
+{// Rule 14, final sweep milestone 9: a scan for refusing buttons
+ const KEEP=[/no patch on his chest/,/already off/,/Nothing to shave/,/already shaved/,/No pads on yet/,/Pressed hard/,/stuck fine/];
+ const left=[...html.matchAll(/say\('([^']{0,160})',''\);return;/g)].map(m=>m[1]).filter(t=>!KEEP.some(k=>k.test(t)));
+ report('teach','no button refuses a wrong action a person could really take: every refusal left is a fix-up with nothing to fix (free)',left.length===0,left.slice(0,3).join(' | ')||`${KEEP.length} free fix-ups kept`);}
 console.log(`\n${n-failed}/${n} checks passed · ${Math.round((Date.now()-T0)/1000)} s`);process.exit(failed?1:0);
